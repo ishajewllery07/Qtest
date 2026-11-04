@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTET SST Exam & Study Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDKs (v9 Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    body { font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif; }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased">
+
+  <!-- Header -->
+  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+      <div class="cursor-pointer flex items-center gap-2" onclick="navTo('viewDashboard')">
+        <span class="p-2 bg-white/10 rounded-xl text-lg">🏛️</span>
+        <div>
+          <h1 class="text-base md:text-lg font-bold leading-tight">CTET SST Exam & Study Portal</h1>
+          <p class="text-[11px] text-indigo-200">Paper 2: Social Science • NCERT</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="cloudStatusBadge" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Cloud Sync Active
+        </span>
+        <button onclick="navTo('viewDashboard')" class="px-3.5 py-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 rounded-lg transition flex items-center gap-1.5">
+          <span>🏠</span> <span>Dashboard</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-5xl w-full mx-auto px-4 py-5 flex-1">
+
+    <!-- Overall Dashboard Summary -->
+    <div id="statsRow" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 block">Total Tests Taken</span>
+        <b id="statTests" class="text-xl font-black text-slate-800">0</b>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 block">Average Accuracy</span>
+        <b id="statAvg" class="text-xl font-black text-emerald-600">—</b>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 block">Best Score</span>
+        <b id="statBest" class="text-xl font-black text-amber-600">—</b>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 block">Total Questions Bank</span>
+        <b id="statTotalQues" class="text-xl font-black text-indigo-600">0</b>
+      </div>
+    </div>
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="viewDashboard" class="space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Full Mock Test Card -->
+        <div onclick="openSetsView()" class="bg-gradient-to-br from-indigo-700 to-indigo-900 rounded-2xl p-5 text-white shadow hover:shadow-lg transition cursor-pointer flex flex-col justify-between">
+          <div>
+            <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 mb-2">Practice Sets</span>
+            <h3 class="text-lg font-bold">Full SST Mock Test (Set 1 to 10)</h3>
+            <p class="text-xs text-indigo-100 mt-1 opacity-90">CTET Paper 2 Pattern: 60 Questions, 25 Minutes.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/20 flex items-center justify-between text-xs font-semibold">
+            <span>10 Mock Sets Available</span>
+            <span class="bg-white text-indigo-900 px-3 py-1.5 rounded-lg">Open Sets →</span>
+          </div>
+        </div>
+
+        <!-- PYQ Card -->
+        <div onclick="openPyqView()" class="bg-gradient-to-br from-purple-700 to-purple-900 rounded-2xl p-5 text-white shadow hover:shadow-lg transition cursor-pointer flex flex-col justify-between">
+          <div>
+            <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 mb-2">Yearly Papers</span>
+            <h3 class="text-lg font-bold">Previous Year Questions (PYQ 2021 – 2026)</h3>
+            <p class="text-xs text-purple-100 mt-1 opacity-90">Official question papers from past years (25 minutes). Randomized questions & options on each attempt.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/20 flex items-center justify-between text-xs font-semibold">
+            <span>Years 2021 to 2026</span>
+            <span class="bg-white text-purple-900 px-3 py-1.5 rounded-lg">View PYQ Tests →</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subject Explorer Section -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+        <div class="border-b border-slate-100 pb-3 mb-4">
+          <h2 class="text-base font-bold text-slate-800">Subject & Class Explorer</h2>
+          <p class="text-xs text-slate-500">Select any subject to explore available classes and chapter-wise mock tests</p>
+        </div>
+        <div id="subjectGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+      </div>
+    </section>
+
+    <!-- 2. FULL MOCK TEST SETS VIEW (Set 1 to 10) -->
+    <section id="viewSets" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200">
+        <h2 class="text-base font-bold text-slate-800">Full SST Mock Tests (Set 1 to Set 10)</h2>
+        <p class="text-xs text-slate-500">60 Questions each • 25 Minutes duration</p>
+      </div>
+      <div id="setsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+    </section>
+
+    <!-- 3. PYQ YEARS VIEW (2021 to 2026) -->
+    <section id="viewPyq" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200">
+        <h2 class="text-base font-bold text-slate-800">Previous Year Questions (CTET PYQ 2021 – 2026)</h2>
+        <p class="text-xs text-slate-500">Official Exam Simulation • 25 Minutes</p>
+      </div>
+      <div id="pyqContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+    </section>
+
+    <!-- 4. CLASSES VIEW (Inside chosen subject) -->
+    <section id="viewClasses" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200">
+        <h2 id="classSubjectTitle" class="text-base font-bold text-slate-800"></h2>
+        <p class="text-xs text-slate-500">Choose your class to proceed to chapters</p>
+      </div>
+      <div id="classesListContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 5. CHAPTERS VIEW -->
+    <section id="viewChapters" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200">
+        <h2 id="chapSubjectClassTitle" class="text-base font-bold text-slate-800"></h2>
+        <p class="text-xs text-slate-500">Chapter-wise Practice & Mock Tests • 15 Minutes per chapter</p>
+      </div>
+      
+      <div id="chaptersListContainer" class="space-y-3"></div>
+
+      <!-- Revision Quest Card -->
+      <div id="revisionQuestCard" class="mt-5 p-5 bg-gradient-to-r from-amber-600 to-orange-700 rounded-2xl text-white shadow flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20">Mega Revision (25 Mins)</span>
+            <span id="questStatusBadge"></span>
+          </div>
+          <h3 class="text-base font-bold" id="revisionQuestTitle">All Chapter Revision Quest</h3>
+          <p class="text-xs text-amber-100 mt-0.5">Comprehensive mock test with questions mixed from all chapters in this class.</p>
+        </div>
+        <button onclick="startClassRevisionQuest()" class="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-xs font-bold shadow hover:bg-amber-50 shrink-0">
+          Start Revision Test →
+        </button>
+      </div>
+    </section>
+
+    <!-- 6. ACTIVE TEST VIEW -->
+    <section id="viewTest" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span id="testContextTitle" class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 block"></span>
+          <h2 id="testExamName" class="text-sm md:text-base font-bold text-slate-800 truncate max-w-md"></h2>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 px-3 py-1 bg-slate-100 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-800">
+            <span id="timerIcon">⏱️</span>
+            <span id="timeDisplay">00:00</span>
+          </div>
+          <button id="btnTimerToggle" onclick="toggleTimer()" class="px-2.5 py-1 text-xs font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition">
+            ⏸️ Pause
+          </button>
+          <button onclick="confirmSubmitModal()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow flex items-center gap-1">
+            <span>✓</span> <span>Submit Test</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between min-h-[420px]">
+        <div>
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 text-xs">
+            <span id="badgeQuestionNumber" class="px-2.5 py-1 bg-slate-900 text-white rounded-lg font-bold">Question 1/1</span>
+            <span id="badgeTopic" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-medium"></span>
+          </div>
+
+          <div id="questionText" class="text-base font-semibold text-slate-800 leading-relaxed mb-6 select-none">
+            Loading question...
+          </div>
+
+          <div id="optionsContainer" class="space-y-2.5 mb-6"></div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <button onclick="toggleMarkReview()" id="btnMarkReview" class="px-3 py-2 rounded-xl text-xs font-bold border border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100">
+              🔖 Mark for Review
+            </button>
+            <button onclick="clearCurrentSelection()" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-100">
+              Clear
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="prevQuestion()" id="btnPrev" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">
+              ← Previous
+            </button>
+            <button onclick="nextQuestion()" id="btnNext" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700">
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Palette -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-3 text-xs font-bold text-slate-600">
+          <span>Question Palette</span>
+          <div class="flex items-center gap-3">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span> Answered</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-purple-600 inline-block"></span> Review</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-slate-200 inline-block"></span> Pending</span>
+          </div>
+        </div>
+        <div id="paletteGrid" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-1.5 max-h-48 overflow-y-auto custom-scroll pr-1"></div>
+      </div>
+    </section>
+
+    <!-- 7. RESULT VIEW -->
+    <section id="viewResult" class="hidden space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs font-bold text-indigo-600 uppercase">Test Result</span>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✔</span>
+                Completed
+              </span>
+            </div>
+            <h2 id="resultExamTitle" class="text-xl font-bold text-slate-900 mt-1"></h2>
+            <p id="resultFeedback" class="text-xs text-slate-600 mt-1"></p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-slate-400 block font-semibold">Total Score</span>
+            <div id="resultTotalScore" class="text-3xl font-black text-indigo-600">0 / 0</div>
+            <span id="resultPercentage" class="text-xs font-bold text-slate-600">0%</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 my-5">
+          <div class="p-3 bg-emerald-50 rounded-xl text-center border border-emerald-200">
+            <span class="text-xs text-emerald-700 block">Correct</span>
+            <b id="resultCorrect" class="text-xl font-black text-emerald-600">0</b>
+          </div>
+          <div class="p-3 bg-rose-50 rounded-xl text-center border border-rose-200">
+            <span class="text-xs text-rose-700 block">Incorrect</span>
+            <b id="resultIncorrect" class="text-xl font-black text-rose-600">0</b>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl text-center border border-slate-200">
+            <span class="text-xs text-slate-600 block">Skipped</span>
+            <b id="resultSkipped" class="text-xl font-black text-slate-600">0</b>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100">
+          <button onclick="navTo('viewDashboard')" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800">
+            Go to Dashboard
+          </button>
+          <button onclick="restartCurrentTestWithShuffle()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow">
+            🔄 Retake Test (Shuffled)
+          </button>
+          <button onclick="toggleSolutions()" class="px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-100">
+            View Solutions & Answers
+          </button>
+        </div>
+      </div>
+
+      <div id="solutionsBox" class="hidden bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Detailed Solutions & Explanations</h3>
+        <div id="solutionsList" class="space-y-4"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Submit Confirmation Modal -->
+  <div id="submitModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 text-center">
+      <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-lg mx-auto mb-2">✓</div>
+      <h3 class="text-base font-bold text-slate-900 mb-1">Submit Your Test?</h3>
+      <p id="submitModalText" class="text-xs text-slate-600 mb-4"></p>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <button onclick="closeSubmitModal()" class="py-2 px-3 font-bold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200">Cancel</button>
+        <button onclick="finalizeSubmit()" class="py-2 px-3 font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow">Yes, Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function getCompletedTests() {
+      try {
+        return JSON.parse(localStorage.getItem('ctet_completed_tests') || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function markTestCompleted(testKey) {
+      if (!testKey) return;
+      const data = getCompletedTests();
+      data[testKey] = true;
+      try {
+        localStorage.setItem('ctet_completed_tests', JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    function isTestCompleted(testKey, questionCount = 1) {
+      if (!questionCount || questionCount <= 0) return false;
+      const data = getCompletedTests();
+      return !!data[testKey];
+    }
+
+    function renderGreenCheckBadge(isDone) {
+      if (!isDone) return '';
+      return `
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-sm shrink-0">
+          <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-black leading-none">✔</span>
+          <span>Done</span>
+        </span>
+      `;
+    }
+
+    // --- FIREBASE INITIALIZATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBPjVr13qlEutj-JnQ0SmU1miTDLBD78ak",
+      authDomain: "ctet-sst-portal.firebaseapp.com",
+      databaseURL: "https://ctet-sst-portal-default-rtdb.firebaseio.com",
+      projectId: "ctet-sst-portal",
+      storageBucket: "ctet-sst-portal.firebasestorage.app",
+      messagingSenderId: "303323944066",
+      appId: "1:303323944066:web:fc48860e48c989f32a509b",
+      measurementId: "G-V7T7E9KJRL"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const DEFAULT_APP_DATA = {
+      History: {
+        title: 'History (Our Pasts I, II, III)',
+        icon: '🏺',
+        isActive: true,
+        classes: {
+          6: [
+            { id: 'h6_1', name: 'Chapter 1: What, Where, How and When?' },
+            { id: 'h6_2', name: 'Chapter 2: From Hunting-Gathering to Growing Food' },
+            { id: 'h6_3', name: 'Chapter 3: In the Earliest Cities' },
+            { id: 'h6_4', name: 'Chapter 4: What Books and Burials Tell Us' },
+            { id: 'h6_5', name: 'Chapter 5: Kingdoms, Kings and an Early Republic' },
+            { id: 'h6_6', name: 'Chapter 6: New Questions and Ideas' }
+          ],
+          7: [
+            { id: 'h7_1', name: 'Chapter 1: Tracing Changes Through a Thousand Years' },
+            { id: 'h7_2', name: 'Chapter 2: New Kings and Kingdoms' },
+            { id: 'h7_3', name: 'Chapter 3: The Delhi Sultans' },
+            { id: 'h7_4', name: 'Chapter 4: The Mughal Empire' }
+          ],
+          8: [
+            { id: 'h8_1', name: 'Chapter 1: How, When and Where' },
+            { id: 'h8_2', name: 'Chapter 2: From Trade to Territory' },
+            { id: 'h8_3', name: 'Chapter 3: Ruling the Countryside' },
+            { id: 'h8_4', name: 'Chapter 4: Tribals, Dikus and the Vision of a Golden Age' },
+            { id: 'h8_5', name: 'Chapter 5: When People Rebel (1857 and After)' }
+          ]
+        }
+      },
+      Geography: {
+        title: 'Geography (The Earth: Our Habitat, Environment & Resources)',
+        icon: '🌍',
+        isActive: true,
+        classes: {
+          6: [
+            { id: 'g6_1', name: 'Chapter 1: The Earth in the Solar System' },
+            { id: 'g6_2', name: 'Chapter 2: Globe: Latitudes and Longitudes' },
+            { id: 'g6_3', name: 'Chapter 3: Motions of the Earth' },
+            { id: 'g6_4', name: 'Chapter 4: Maps' },
+            { id: 'g6_5', name: 'Chapter 5: Major Domains of the Earth' }
+          ],
+          7: [
+            { id: 'g7_1', name: 'Chapter 1: Environment' },
+            { id: 'g7_2', name: 'Chapter 2: Inside Our Earth' },
+            { id: 'g7_3', name: 'Chapter 3: Our Changing Earth' },
+            { id: 'g7_4', name: 'Chapter 4: Air' },
+            { id: 'g7_5', name: 'Chapter 5: Water' }
+          ],
+          8: [
+            { id: 'g8_1', name: 'Chapter 1: Resources' },
+            { id: 'g8_2', name: 'Chapter 2: Land, Soil, Water, Natural Vegetation & Wildlife' },
+            { id: 'g8_3', name: 'Chapter 3: Agriculture' },
+            { id: 'g8_4', name: 'Chapter 4: Industries' },
+            { id: 'g8_5', name: 'Chapter 5: Human Resources' }
+          ]
+        }
+      },
+      Civics: {
+        title: 'Social and Political Life (I, II, III)',
+        icon: '🏛️',
+        isActive: true,
+        classes: {
+          6: [
+            { id: 'c6_1', name: 'Chapter 1: Understanding Diversity' },
+            { id: 'c6_2', name: 'Chapter 2: Diversity and Discrimination' },
+            { id: 'c6_3', name: 'Chapter 3: What is Government?' },
+            { id: 'c6_4', name: 'Chapter 4: Panchayati Raj' },
+            { id: 'c6_5', name: 'Chapter 5: Rural Administration' }
+          ],
+          7: [
+            { id: 'c7_1', name: 'Chapter 1: On Equality' },
+            { id: 'c7_2', name: 'Chapter 2: Role of the Government in Health' },
+            { id: 'c7_3', name: 'Chapter 3: How the State Government Works' },
+            { id: 'c7_4', name: 'Chapter 4: Growing up as Boys and Girls' }
+          ],
+          8: [
+            { id: 'c8_1', name: 'Chapter 1: The Indian Constitution' },
+            { id: 'c8_2', name: 'Chapter 2: Understanding Secularism' },
+            { id: 'c8_3', name: 'Chapter 3: Why Do We Need a Parliament?' },
+            { id: 'c8_4', name: 'Chapter 4: Judiciary' },
+            { id: 'c8_5', name: 'Chapter 5: Understanding Marginalisation' }
+          ]
+        }
+      }
+    };
+
+    let APP_DATA = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
+    let QUESTION_BANK = [];
+
+    // Helper: Sort chapters naturally by chapter number
+    function extractChapterNum(name) {
+      if (!name) return 9999;
+      const m = name.match(/(?:Chapter|पाठ|Lesson|अध्याय)\s*(\d+)/i) || name.match(/\d+/);
+      return m ? parseInt(m[1] || m[0], 10) : 9999;
+    }
+
+    function initFirebaseSync() {
+      db.ref('subjects').on('value', snapshot => {
+        const cloudSubjects = snapshot.val();
+        if (cloudSubjects) {
+          Object.entries(cloudSubjects).forEach(([key, sub]) => {
+            if (!APP_DATA[key]) {
+              APP_DATA[key] = {
+                title: sub.title || key,
+                icon: sub.icon || '📚',
+                isActive: sub.isActive !== undefined ? sub.isActive : true,
+                classes: {}
+              };
+            } else {
+              APP_DATA[key].title = sub.title || APP_DATA[key].title;
+              APP_DATA[key].icon = sub.icon || APP_DATA[key].icon;
+              APP_DATA[key].isActive = sub.isActive !== undefined ? sub.isActive : true;
+            }
+          });
+          renderDashboard();
+        }
+      });
+
+      db.ref('chapters').on('value', snapshot => {
+        const cloudChapters = snapshot.val();
+        APP_DATA = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
+
+        db.ref('subjects').once('value', sSnap => {
+          const sData = sSnap.val();
+          if (sData) {
+            Object.entries(sData).forEach(([k, s]) => {
+              if (!APP_DATA[k]) APP_DATA[k] = { title: s.title, icon: s.icon, isActive: s.isActive !== false, classes: {} };
+              else APP_DATA[k].isActive = s.isActive !== false;
+            });
+          }
+
+          if (cloudChapters) {
+            Object.values(cloudChapters).forEach(ch => {
+              if (ch.deleted) {
+                if (APP_DATA[ch.subject] && APP_DATA[ch.subject].classes && APP_DATA[ch.subject].classes[ch.class]) {
+                  APP_DATA[ch.subject].classes[ch.class] = APP_DATA[ch.subject].classes[ch.class].filter(c => c.id !== ch.id);
+                }
+                return;
+              }
+
+              if (!APP_DATA[ch.subject]) {
+                APP_DATA[ch.subject] = { title: ch.subject, icon: '📚', isActive: true, classes: {} };
+              }
+              if (!APP_DATA[ch.subject].classes) {
+                APP_DATA[ch.subject].classes = {};
+              }
+              if (!APP_DATA[ch.subject].classes[ch.class]) {
+                APP_DATA[ch.subject].classes[ch.class] = [];
+              }
+
+              const idx = APP_DATA[ch.subject].classes[ch.class].findIndex(c => c.id === ch.id);
+              if (idx !== -1) {
+                APP_DATA[ch.subject].classes[ch.class][idx].name = ch.name;
+              } else {
+                APP_DATA[ch.subject].classes[ch.class].push({ id: ch.id, name: ch.name });
+              }
+            });
+          }
+          renderDashboard();
+        });
+      });
+
+      db.ref('questions').on('value', snapshot => {
+        const cloudData = snapshot.val();
+        QUESTION_BANK = [];
+        if (cloudData) {
+          Object.keys(cloudData).forEach(key => {
+            const q = cloudData[key];
+            QUESTION_BANK.push({ ...q, id: q.id || key });
+          });
+        }
+        renderDashboard();
+      });
+    }
+
+    let appState = { testsTaken: 0, totalScoreSum: 0, bestPercentage: 0 };
+    let navStack = ['viewDashboard'];
+
+    function navTo(viewId, pushHistory = true) {
+      const views = ['viewDashboard', 'viewSets', 'viewPyq', 'viewClasses', 'viewChapters', 'viewTest', 'viewResult'];
+      views.forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.classList.toggle('hidden', v !== viewId);
+      });
+
+      const stats = document.getElementById('statsRow');
+      if (stats) stats.classList.toggle('hidden', viewId !== 'viewDashboard');
+
+      if (pushHistory && navStack[navStack.length - 1] !== viewId) {
+        navStack.push(viewId);
+        window.history.pushState({ viewId }, '');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.onpopstate = function() {
+      if (navStack.length > 1) {
+        navStack.pop();
+        const prev = navStack[navStack.length - 1];
+        if (prev === 'viewSets') openSetsView();
+        else if (prev === 'viewPyq') openPyqView();
+        else if (prev === 'viewChapters') openChaptersView(currentClassNum);
+        else if (prev === 'viewClasses') openClassesView(currentSubjectKey);
+        else navTo(prev, false);
+      } else {
+        navTo('viewDashboard', false);
+      }
+    };
+
+    function renderDashboard() {
+      document.getElementById('statTests').textContent = appState.testsTaken;
+      document.getElementById('statAvg').textContent = appState.testsTaken > 0 ? Math.round(appState.totalScoreSum / appState.testsTaken) + '%' : '—';
+      document.getElementById('statBest').textContent = appState.bestPercentage > 0 ? appState.bestPercentage + '%' : '—';
+      document.getElementById('statTotalQues').textContent = QUESTION_BANK.length;
+
+      const grid = document.getElementById('subjectGrid');
+      const activeSubjects = Object.entries(APP_DATA).filter(([k, v]) => v.isActive !== false);
+
+      grid.innerHTML = activeSubjects.map(([key, data]) => {
+        const qCount = QUESTION_BANK.filter(q => q.subject === key).length;
+        const classesPresent = Object.keys(data.classes || {}).sort((a,b) => Number(a) - Number(b));
+        const classSubtitle = classesPresent.length > 0 
+          ? `Classes: ${classesPresent.join(', ')} • Chapters` 
+          : 'Chapters & Practice';
+
+        return `
+          <div onclick="openClassesView('${key}')" class="bg-slate-50 hover:bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col justify-between">
+            <div>
+              <div class="text-3xl mb-2">${data.icon || '📚'}</div>
+              <h4 class="font-bold text-slate-800 text-sm">${data.title}</h4>
+              <p class="text-xs text-slate-500 mt-1">${classSubtitle}</p>
+            </div>
+            <div class="mt-4 pt-2.5 border-t border-slate-200 flex items-center justify-between text-xs">
+              <span class="text-indigo-600 font-semibold">${qCount} Questions</span>
+              <span class="text-slate-500 font-medium">Explore Classes →</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 1. FULL MOCK TEST SETS (1 to 10)
+    function openSetsView() {
+      const container = document.getElementById('setsContainer');
+      let html = '';
+      for (let i = 1; i <= 10; i++) {
+        const count = QUESTION_BANK.filter(q => Number(q.mockSet) === i).length;
+        const testKey = `mockset_${i}`;
+        const isDone = isTestCompleted(testKey, count);
+
+        html += `
+          <div class="bg-white p-4 rounded-xl border ${isDone ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-200'} shadow-sm flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">CTET SST SET ${i}</span>
+                ${renderGreenCheckBadge(isDone)}
+              </div>
+              <h4 class="font-bold text-slate-800 text-sm mt-1">Full Mock Test - Set ${i}</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Duration: <strong>25 Mins</strong> • Questions: <strong>${count}</strong></p>
+            </div>
+            <div class="pt-2 border-t border-slate-100">
+              <button onclick="startMockSet(${i})" class="w-full py-2 ${isDone ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded-lg text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">
+                ${isDone ? '<span>Retake Test</span>' : '<span>Start Mock Test</span>'} <span>→</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+      navTo('viewSets');
+    }
+
+    // 2. PYQ YEARS (2021 to 2026)
+    function openPyqView() {
+      const container = document.getElementById('pyqContainer');
+      const years = ['2021', '2022', '2023', '2024', '2025', '2026'];
+      container.innerHTML = years.map(yr => {
+        const count = QUESTION_BANK.filter(q => String(q.year) === yr).length;
+        const testKey = `pyq_${yr}`;
+        const isDone = isTestCompleted(testKey, count);
+
+        return `
+          <div class="bg-white p-4 rounded-xl border ${isDone ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-200'} shadow-sm flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">CTET Official Paper</span>
+                ${renderGreenCheckBadge(isDone)}
+              </div>
+              <h4 class="font-bold text-slate-800 text-sm mt-1">CTET Paper 2 (${yr})</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Duration: <strong>25 Mins</strong> • Questions: <strong>${count}</strong></p>
+            </div>
+            <div class="pt-2 border-t border-slate-100">
+              <button onclick="startPyqExam('${yr}')" class="w-full py-2 ${isDone ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-purple-600 hover:bg-purple-700'} text-white text-xs font-bold rounded-lg transition shadow-sm flex items-center justify-center gap-1.5">
+                ${isDone ? '<span>Retake Test</span>' : '<span>Start Mock Test</span>'} <span>→</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      navTo('viewPyq');
+    }
+
+    // 3. CLASSES VIEW
+    let currentSubjectKey = 'History';
+
+    function openClassesView(subjectKey) {
+      currentSubjectKey = subjectKey;
+      const subj = APP_DATA[subjectKey] || { title: subjectKey, icon: '📚', classes: {} };
+      document.getElementById('classSubjectTitle').textContent = `${subj.icon || '📚'} ${subj.title}`;
+
+      const container = document.getElementById('classesListContainer');
+      const classKeys = Object.keys(subj.classes || {}).map(Number).sort((a,b) => a - b);
+      const classesToDisplay = classKeys.length > 0 ? classKeys : [6, 7, 8];
+
+      container.innerHTML = classesToDisplay.map(cls => {
+        const chList = (subj.classes && subj.classes[cls]) ? subj.classes[cls] : [];
+        const qCount = QUESTION_BANK.filter(q => q.subject === subjectKey && Number(q.class) === cls).length;
+        return `
+          <div onclick="openChaptersView(${cls})" class="bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col justify-between">
+            <div>
+              <span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">Class ${cls}</span>
+              <h3 class="text-base font-bold text-slate-800 mt-2">Class ${cls}: ${subj.title.split(' ')[0]}</h3>
+              <p class="text-xs text-slate-500 mt-1">${chList.length} Chapters Available</p>
+            </div>
+            <div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-600">${qCount} Questions</span>
+              <span class="text-indigo-600 font-bold">Open Chapters →</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      navTo('viewClasses');
+    }
+
+    // 4. CHAPTERS VIEW (Sorted Chapter 1, 2, 3...)
+    let currentClassNum = 6;
+
+    function openChaptersView(classNum) {
+      currentClassNum = classNum;
+      const subj = APP_DATA[currentSubjectKey] || { title: currentSubjectKey, icon: '📚', classes: {} };
+      document.getElementById('chapSubjectClassTitle').textContent = `${subj.icon || '📚'} ${subj.title} • Class ${classNum}`;
+      document.getElementById('revisionQuestTitle').textContent = `Class ${classNum} - All Chapter Revision Quest`;
+
+      const questPoolCount = QUESTION_BANK.filter(q => q.subject === currentSubjectKey && Number(q.class) === Number(currentClassNum)).length;
+      const questKey = `quest_${currentSubjectKey}_${classNum}`;
+      const questDone = isTestCompleted(questKey, questPoolCount);
+      document.getElementById('questStatusBadge').innerHTML = renderGreenCheckBadge(questDone);
+
+      const listContainer = document.getElementById('chaptersListContainer');
+      let chapters = (subj.classes && subj.classes[classNum]) ? [...subj.classes[classNum]] : [];
+
+      // Accurate Natural Numeric Sorting (1, 2, 3... 10)
+      chapters.sort((a, b) => {
+        const numA = extractChapterNum(a.name);
+        const numB = extractChapterNum(b.name);
+        return numA - numB;
+      });
+
+      if (chapters.length === 0) {
+        listContainer.innerHTML = `
+          <div class="bg-white p-6 rounded-xl border border-slate-200 text-center text-slate-500 text-xs">
+            No chapters found for Class ${classNum}. You can add chapters via Admin panel.
+          </div>
+        `;
+      } else {
+        listContainer.innerHTML = chapters.map((ch, idx) => {
+          const count = QUESTION_BANK.filter(q => q.chapterId === ch.id).length;
+          const testKey = `chapter_${ch.id}`;
+          const isDone = isTestCompleted(testKey, count);
+          const chNum = extractChapterNum(ch.name) !== 9999 ? extractChapterNum(ch.name) : (idx + 1);
+
+          return `
+            <div class="bg-white p-3.5 rounded-xl border ${isDone ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-200'} shadow-sm flex flex-wrap items-center justify-between gap-2">
+              <div class="flex-1 min-w-[200px]">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Lesson ${chNum}</span>
+                  ${renderGreenCheckBadge(isDone)}
+                </div>
+                <h4 class="font-bold text-slate-800 text-sm mt-1">${ch.name}</h4>
+                <p class="text-[11px] text-slate-400">Duration: 15 Mins • Available Questions: ${count}</p>
+              </div>
+              <div>
+                <button onclick="startChapterTest('${ch.id}', '${ch.name.replace(/'/g, "\\'")}')" class="px-4 py-1.5 ${isDone ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700'} text-xs font-bold rounded-lg transition shadow-sm">
+                  ${isDone ? 'Retake Test →' : 'Start Test →'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      navTo('viewChapters');
+    }
+
+    // --- TEST ENGINE ---
+    let globalTimerInterval = null;
+    let timerTargetEpoch = 0;
+    let timerRemainingSeconds = 0;
+
+    let activeTest = {
+      testKey: '',
+      title: '',
+      context: '',
+      questions: [],
+      userAnswers: {},
+      markedReview: new Set(),
+      currentIndex: 0,
+      isPaused: false,
+      originalPool: [],
+      durationMinutes: 15
+    };
+
+    function clearTimerEngine() {
+      if (globalTimerInterval) {
+        clearInterval(globalTimerInterval);
+        globalTimerInterval = null;
+      }
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function prepareQuestionWithShuffledOptions(rawQ) {
+      const opts = (rawQ.options || []).map((opt, i) => ({
+        text: opt,
+        isCorrect: i === Number(rawQ.correctIndex)
+      }));
+      const shuffledOpts = shuffleArray(opts);
+      const newCorrectIndex = shuffledOpts.findIndex(o => o.isCorrect);
+
+      return {
+        id: rawQ.id,
+        text: rawQ.text,
+        options: shuffledOpts.map(o => o.text),
+        correctIndex: newCorrectIndex,
+        explanation: rawQ.explanation || 'According to NCERT textbooks.',
+        topic: rawQ.subject || 'SST'
+      };
+    }
+
+    function initTest(pool, title, context, minutes, testKey) {
+      if (!pool || pool.length === 0) {
+        alert('No questions available in this test yet. Please add questions for this specific test from the Admin Panel.');
+        return;
+      }
+
+      clearTimerEngine();
+
+      const shuffledQuestions = shuffleArray(pool).map(q => prepareQuestionWithShuffledOptions(q));
+
+      activeTest = {
+        testKey: testKey,
+        title: title,
+        context: context,
+        questions: shuffledQuestions,
+        userAnswers: {},
+        markedReview: new Set(),
+        currentIndex: 0,
+        isPaused: false,
+        originalPool: pool,
+        durationMinutes: minutes
+      };
+
+      document.getElementById('testExamName').textContent = title;
+      document.getElementById('testContextTitle').textContent = context;
+
+      startAccurateTimer(minutes * 60);
+      renderCurrentQuestion();
+      renderPalette();
+      navTo('viewTest');
+    }
+
+    function startAccurateTimer(totalSeconds) {
+      clearTimerEngine();
+      timerRemainingSeconds = totalSeconds;
+      timerTargetEpoch = Date.now() + (timerRemainingSeconds * 1000);
+      activeTest.isPaused = false;
+      document.getElementById('btnTimerToggle').textContent = '⏸️ Pause';
+      document.getElementById('btnTimerToggle').className = 'px-2.5 py-1 text-xs font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition';
+      
+      updateTimerDisplay(timerRemainingSeconds);
+
+      globalTimerInterval = setInterval(() => {
+        if (!activeTest.isPaused) {
+          const now = Date.now();
+          const diff = Math.max(0, Math.round((timerTargetEpoch - now) / 1000));
+          timerRemainingSeconds = diff;
+          updateTimerDisplay(timerRemainingSeconds);
+
+          if (timerRemainingSeconds <= 0) {
+            clearTimerEngine();
+            finalizeSubmit();
+          }
+        }
+      }, 1000);
+    }
+
+    function toggleTimer() {
+      activeTest.isPaused = !activeTest.isPaused;
+      const btn = document.getElementById('btnTimerToggle');
+      if (activeTest.isPaused) {
+        btn.textContent = '▶️ Resume';
+        btn.classList.add('bg-emerald-200', 'text-emerald-900');
+      } else {
+        btn.textContent = '⏸️ Pause';
+        btn.classList.remove('bg-emerald-200', 'text-emerald-900');
+        timerTargetEpoch = Date.now() + (timerRemainingSeconds * 1000);
+      }
+    }
+
+    function updateTimerDisplay(totalSecs) {
+      const min = Math.floor(totalSecs / 60);
+      const sec = totalSecs % 60;
+      document.getElementById('timeDisplay').textContent = 
+        `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    }
+
+    function renderCurrentQuestion() {
+      const q = activeTest.questions[activeTest.currentIndex];
+      const total = activeTest.questions.length;
+      const idx = activeTest.currentIndex;
+
+      document.getElementById('badgeQuestionNumber').textContent = `Question ${idx + 1} / ${total}`;
+      document.getElementById('badgeTopic').textContent = q.topic;
+      document.getElementById('questionText').textContent = q.text;
+
+      const letters = ['(A)', '(B)', '(C)', '(D)'];
+      const selected = activeTest.userAnswers[idx];
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = q.options.map((opt, oIdx) => {
+        const isChecked = selected === oIdx;
+        return `
+          <div onclick="selectOption(${oIdx})" class="p-3 rounded-xl border cursor-pointer transition select-none flex items-start gap-2.5 ${
+            isChecked 
+              ? 'border-emerald-600 bg-emerald-50/70 ring-1 ring-emerald-500 font-semibold' 
+              : 'border-slate-200 bg-white hover:bg-slate-50'
+          }">
+            <span class="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center shrink-0 text-[10px] font-bold ${
+              isChecked ? 'bg-emerald-600 border-emerald-600 text-white' : ''
+            }">${isChecked ? '✓' : ''}</span>
+            <div class="text-xs leading-relaxed text-slate-800">
+              <strong class="mr-1">${letters[oIdx]}</strong> ${opt}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const isMarked = activeTest.markedReview.has(idx);
+      const btnMark = document.getElementById('btnMarkReview');
+      btnMark.className = isMarked
+        ? 'px-3 py-2 rounded-xl text-xs font-bold border border-purple-500 bg-purple-600 text-white'
+        : 'px-3 py-2 rounded-xl text-xs font-bold border border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100';
+
+      document.getElementById('btnPrev').disabled = idx === 0;
+      document.getElementById('btnPrev').style.opacity = idx === 0 ? '0.4' : '1';
+
+      const btnNext = document.getElementById('btnNext');
+      btnNext.textContent = idx === total - 1 ? 'Review & Submit →' : 'Next →';
+    }
+
+    function selectOption(optIdx) {
+      activeTest.userAnswers[activeTest.currentIndex] = optIdx;
+      renderCurrentQuestion();
+      renderPalette();
+    }
+
+    function clearCurrentSelection() {
+      delete activeTest.userAnswers[activeTest.currentIndex];
+      renderCurrentQuestion();
+      renderPalette();
+    }
+
+    function toggleMarkReview() {
+      const idx = activeTest.currentIndex;
+      if (activeTest.markedReview.has(idx)) activeTest.markedReview.delete(idx);
+      else activeTest.markedReview.add(idx);
+      renderCurrentQuestion();
+      renderPalette();
+    }
+
+    function prevQuestion() {
+      if (activeTest.currentIndex > 0) {
+        activeTest.currentIndex--;
+        renderCurrentQuestion();
+        renderPalette();
+      }
+    }
+
+    function nextQuestion() {
+      if (activeTest.currentIndex < activeTest.questions.length - 1) {
+        activeTest.currentIndex++;
+        renderCurrentQuestion();
+        renderPalette();
+      } else {
+        confirmSubmitModal();
+      }
+    }
+
+    function jumpToQuestion(idx) {
+      activeTest.currentIndex = idx;
+      renderCurrentQuestion();
+      renderPalette();
+    }
+
+    function renderPalette() {
+      const grid = document.getElementById('paletteGrid');
+      grid.innerHTML = activeTest.questions.map((_, i) => {
+        const isAns = activeTest.userAnswers[i] !== undefined;
+        const isMark = activeTest.markedReview.has(i);
+        const isCur = i === activeTest.currentIndex;
+
+        let bg = 'bg-slate-100 text-slate-700';
+        if (isAns) bg = 'bg-emerald-500 text-white font-bold';
+        if (isMark) bg = 'bg-purple-600 text-white font-bold';
+
+        const ring = isCur ? 'ring-2 ring-indigo-900 scale-105' : '';
+
+        return `
+          <button onclick="jumpToQuestion(${i})" class="w-full aspect-square rounded-lg text-xs font-semibold flex items-center justify-center ${bg} ${ring}">
+            ${i + 1}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function confirmSubmitModal() {
+      const total = activeTest.questions.length;
+      const ans = Object.keys(activeTest.userAnswers).length;
+      document.getElementById('submitModalText').innerHTML = 
+        `You have answered <strong>${ans}</strong> out of <strong>${total}</strong> questions.`;
+      document.getElementById('submitModal').classList.remove('hidden');
+    }
+
+    function closeSubmitModal() {
+      document.getElementById('submitModal').classList.add('hidden');
+    }
+
+    function finalizeSubmit() {
+      closeSubmitModal();
+      clearTimerEngine();
+
+      if (activeTest.testKey) {
+        markTestCompleted(activeTest.testKey);
+      }
+
+      let correct = 0;
+      let wrong = 0;
+      const total = activeTest.questions.length;
+
+      const solList = document.getElementById('solutionsList');
+      solList.innerHTML = activeTest.questions.map((q, idx) => {
+        const userChoice = activeTest.userAnswers[idx];
+        const isRight = userChoice === q.correctIndex;
+        const isSkipped = userChoice === undefined;
+
+        if (isRight) correct++;
+        else if (!isSkipped) wrong++;
+
+        const letters = ['A', 'B', 'C', 'D'];
+
+        return `
+          <div class="p-3.5 rounded-xl border text-xs ${isRight ? 'border-emerald-300 bg-emerald-50/30' : isSkipped ? 'border-slate-200' : 'border-rose-300 bg-rose-50/30'}">
+            <div class="flex items-center justify-between mb-2 font-bold">
+              <span>Question ${idx + 1}</span>
+              <span>${isRight ? '✓ Correct' : isSkipped ? 'Skipped' : '✕ Incorrect'}</span>
+            </div>
+            <p class="font-semibold text-slate-900 mb-2">${q.text}</p>
+            <div class="mb-2">
+              <span class="text-slate-500">Your Answer: </span>
+              <strong>${isSkipped ? 'Unanswered' : `(${letters[userChoice]}) ${q.options[userChoice]}`}</strong>
+            </div>
+            <div class="mb-2 text-emerald-800">
+              <span>Correct Answer: </span>
+              <strong>(${letters[q.correctIndex]}) ${q.options[q.correctIndex]}</strong>
+            </div>
+            <p class="text-slate-600 bg-white p-2 rounded border border-slate-100">
+              💡 <strong>Explanation:</strong> ${q.explanation}
+            </p>
+          </div>
+        `;
+      }).join('');
+
+      const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+      appState.testsTaken++;
+      appState.totalScoreSum += pct;
+      if (pct > appState.bestPercentage) appState.bestPercentage = pct;
+
+      document.getElementById('resultExamTitle').textContent = activeTest.title;
+      document.getElementById('resultTotalScore').textContent = `${correct} / ${total}`;
+      document.getElementById('resultPercentage').textContent = `${pct}% Accuracy`;
+      document.getElementById('resultCorrect').textContent = correct;
+      document.getElementById('resultIncorrect').textContent = wrong;
+      document.getElementById('resultSkipped').textContent = total - (correct + wrong);
+      document.getElementById('resultFeedback').textContent = pct >= 60 ? 'Great performance! Your preparation is on track.' : 'Keep practicing! Review the explanations carefully.';
+
+      renderDashboard();
+      navTo('viewResult');
+    }
+
+    function toggleSolutions() {
+      document.getElementById('solutionsBox').classList.toggle('hidden');
+    }
+
+    function restartCurrentTestWithShuffle() {
+      initTest(activeTest.originalPool, activeTest.title, activeTest.context, activeTest.durationMinutes, activeTest.testKey);
+    }
+
+    // --- ACCURATE POOL FILTER LAUNCHERS ---
+    function startMockSet(setNum) {
+      const pool = QUESTION_BANK.filter(q => Number(q.mockSet) === Number(setNum));
+      initTest(pool, `Full Mock Test - Set ${setNum}`, 'CTET Paper 2 Simulation', 25, `mockset_${setNum}`);
+    }
+
+    function startPyqExam(year) {
+      const pool = QUESTION_BANK.filter(q => String(q.year) === String(year));
+      initTest(pool, `CTET SST PYQ ${year}`, 'Previous Year Paper', 25, `pyq_${year}`);
+    }
+
+    function startChapterTest(chapterId, chapterName) {
+      const pool = QUESTION_BANK.filter(q => q.chapterId === chapterId);
+      initTest(pool, chapterName, 'Chapter-wise Practice', 15, `chapter_${chapterId}`);
+    }
+
+    function startClassRevisionQuest() {
+      const pool = QUESTION_BANK.filter(q => q.subject === currentSubjectKey && Number(q.class) === Number(currentClassNum));
+      initTest(pool, `All Chapter Revision Quest (Class ${currentClassNum})`, 'Class Revision Mega Test', 25, `quest_${currentSubjectKey}_${currentClassNum}`);
+    }
+
+    window.onload = function() {
+      renderDashboard();
+      initFirebaseSync();
+    };
+  </script>
+</body>
+</html>
