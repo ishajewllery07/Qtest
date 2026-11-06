@@ -8,15 +8,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Firebase SDKs (v9 Compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
     body { font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif; }
     .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .render-multiline { white-space: pre-line; word-break: break-word; }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased">
@@ -24,20 +21,18 @@
   <!-- Header -->
   <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-30">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-      <div class="cursor-pointer flex items-center gap-2" onclick="navTo('viewDashboard')">
-        <span class="p-2 bg-white/10 rounded-xl text-lg">🏛️</span>
+      <div class="flex items-center gap-2 cursor-pointer" onclick="navTo('viewDashboard')">
+        <span class="p-2 bg-white/10 rounded-xl text-lg">🏛</span>
         <div>
-          <h1 class="text-base md:text-lg font-bold leading-tight">CTET SST Exam & Study Portal</h1>
-          <p class="text-[11px] text-indigo-200">Paper 2: Social Science • NCERT</p>
+          <h1 class="text-base md:text-lg font-bold leading-tight">GTEST.com</h1>
+          <p class="text-[11px] text-indigo-200">• Learn • Practice • Succeed</p>
         </div>
       </div>
+      
       <div class="flex items-center gap-2">
-        <span id="cloudStatusBadge" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Cloud Sync Active
-        </span>
-        <button onclick="navTo('viewDashboard')" class="px-3.5 py-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 rounded-lg transition flex items-center gap-1.5">
-          <span>🏠</span> <span>Dashboard</span>
+        <button onclick="openProfileModal()" class="px-3.5 py-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 border border-white/20 rounded-xl transition flex items-center gap-2 shadow-sm">
+          <span class="w-6 h-6 rounded-full bg-amber-400 text-indigo-950 flex items-center justify-center font-bold text-[11px]" id="headerAvatar">👤</span>
+          <span id="headerStudentName" class="max-w-[110px] sm:max-w-[140px] truncate">Student Profile</span>
         </button>
       </div>
     </div>
@@ -68,13 +63,28 @@
 
     <!-- 1. DASHBOARD VIEW -->
     <section id="viewDashboard" class="space-y-5">
+      <div class="bg-gradient-to-r from-indigo-800 to-slate-900 rounded-2xl p-4 sm:p-5 text-white flex flex-wrap items-center justify-between gap-3 shadow">
+        <div>
+          <span class="text-[11px] bg-white/20 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider text-indigo-200">NCERT Exam Suite</span>
+          <h2 class="text-base sm:text-lg font-bold mt-1" id="dashGreeting">Namaste, Student!</h2>
+          <p class="text-xs text-slate-300">Pehle PDF Notes padhein, fir mock test dekar apna score check karein.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openNotesHub()" class="px-3.5 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
+            <span>📖</span> <span>Study PDF Notes</span>
+          </button>
+          <button onclick="openProfileModal()" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold border border-white/20 transition">
+            ⚙️ My Profile
+          </button>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Full Mock Test Card -->
         <div onclick="openSetsView()" class="bg-gradient-to-br from-indigo-700 to-indigo-900 rounded-2xl p-5 text-white shadow hover:shadow-lg transition cursor-pointer flex flex-col justify-between">
           <div>
             <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 mb-2">Practice Sets</span>
             <h3 class="text-lg font-bold">Full SST Mock Test (Set 1 to 10)</h3>
-            <p class="text-xs text-indigo-100 mt-1 opacity-90">CTET Paper 2 Pattern: 60 Questions, 25 Minutes.</p>
+            <p class="text-xs text-indigo-100 mt-1 opacity-90">CTET Paper 2 Pattern: 60 Questions, 25 Minutes. Original Sequence Preserved.</p>
           </div>
           <div class="mt-4 pt-3 border-t border-white/20 flex items-center justify-between text-xs font-semibold">
             <span>10 Mock Sets Available</span>
@@ -82,12 +92,11 @@
           </div>
         </div>
 
-        <!-- PYQ Card -->
         <div onclick="openPyqView()" class="bg-gradient-to-br from-purple-700 to-purple-900 rounded-2xl p-5 text-white shadow hover:shadow-lg transition cursor-pointer flex flex-col justify-between">
           <div>
             <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 mb-2">Yearly Papers</span>
             <h3 class="text-lg font-bold">Previous Year Questions (PYQ 2021 – 2026)</h3>
-            <p class="text-xs text-purple-100 mt-1 opacity-90">Official question papers from past years (25 minutes). Randomized questions & options on each attempt.</p>
+            <p class="text-xs text-purple-100 mt-1 opacity-90">Official question papers from past years. Exact exam order preserved.</p>
           </div>
           <div class="mt-4 pt-3 border-t border-white/20 flex items-center justify-between text-xs font-semibold">
             <span>Years 2021 to 2026</span>
@@ -96,53 +105,64 @@
         </div>
       </div>
 
-      <!-- Subject Explorer Section -->
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-        <div class="border-b border-slate-100 pb-3 mb-4">
-          <h2 class="text-base font-bold text-slate-800">Subject & Class Explorer</h2>
-          <p class="text-xs text-slate-500">Select any subject to explore available classes and chapter-wise mock tests</p>
+        <div class="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Subject & Class Explorer</h2>
+            <p class="text-xs text-slate-500">Subject chunein aur specific class ke chapter practice tests karein</p>
+          </div>
+          <button onclick="openNotesHub()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+            <span>📖 Read All PDF Notes</span> <span>→</span>
+          </button>
         </div>
         <div id="subjectGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
       </div>
     </section>
 
-    <!-- 2. FULL MOCK TEST SETS VIEW (Set 1 to 10) -->
+    <!-- 2. FULL MOCK TEST SETS VIEW -->
     <section id="viewSets" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200">
-        <h2 class="text-base font-bold text-slate-800">Full SST Mock Tests (Set 1 to Set 10)</h2>
-        <p class="text-xs text-slate-500">60 Questions each • 25 Minutes duration</p>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Full SST Mock Tests (Set 1 to Set 10)</h2>
+          <p class="text-xs text-slate-500">Independent Sets • Questions appear in exact original upload order</p>
+        </div>
       </div>
       <div id="setsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
     </section>
 
-    <!-- 3. PYQ YEARS VIEW (2021 to 2026) -->
+    <!-- 3. PYQ YEARS VIEW -->
     <section id="viewPyq" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200">
-        <h2 class="text-base font-bold text-slate-800">Previous Year Questions (CTET PYQ 2021 – 2026)</h2>
-        <p class="text-xs text-slate-500">Official Exam Simulation • 25 Minutes</p>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Previous Year Questions (CTET PYQ 2021 – 2026)</h2>
+          <p class="text-xs text-slate-500">Official Exam Simulation • Preserved Original Numbering</p>
+        </div>
       </div>
       <div id="pyqContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
     </section>
 
-    <!-- 4. CLASSES VIEW (Inside chosen subject) -->
+    <!-- 4. CLASSES VIEW -->
     <section id="viewClasses" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200">
-        <h2 id="classSubjectTitle" class="text-base font-bold text-slate-800"></h2>
-        <p class="text-xs text-slate-500">Choose your class to proceed to chapters</p>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 id="classSubjectTitle" class="text-base font-bold text-slate-800"></h2>
+          <p class="text-xs text-slate-500">Choose your class to proceed to chapters</p>
+        </div>
       </div>
       <div id="classesListContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
     </section>
 
     <!-- 5. CHAPTERS VIEW -->
     <section id="viewChapters" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200">
-        <h2 id="chapSubjectClassTitle" class="text-base font-bold text-slate-800"></h2>
-        <p class="text-xs text-slate-500">Chapter-wise Practice & Mock Tests • 15 Minutes per chapter</p>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 id="chapSubjectClassTitle" class="text-base font-bold text-slate-800"></h2>
+          <p class="text-xs text-slate-500">Chapter-wise Practice & Mock Tests • 15 Minutes per chapter</p>
+        </div>
       </div>
       
       <div id="chaptersListContainer" class="space-y-3"></div>
 
-      <!-- Revision Quest Card -->
       <div id="revisionQuestCard" class="mt-5 p-5 bg-gradient-to-r from-amber-600 to-orange-700 rounded-2xl text-white shadow flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2 mb-1">
@@ -150,7 +170,7 @@
             <span id="questStatusBadge"></span>
           </div>
           <h3 class="text-base font-bold" id="revisionQuestTitle">All Chapter Revision Quest</h3>
-          <p class="text-xs text-amber-100 mt-0.5">Comprehensive mock test with questions mixed from all chapters in this class.</p>
+          <p class="text-xs text-amber-100 mt-0.5">Comprehensive mock test with questions mixed from chapters in this class.</p>
         </div>
         <button onclick="startClassRevisionQuest()" class="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-xs font-bold shadow hover:bg-amber-50 shrink-0">
           Start Revision Test →
@@ -158,8 +178,59 @@
       </div>
     </section>
 
+    <!-- NOTES HUB VIEW -->
+    <section id="viewNotesHub" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">📖 NCERT Social Science PDF Notes</h2>
+          <p class="text-xs text-slate-500">Read notes with diagrams & pictures before taking mock tests</p>
+        </div>
+      </div>
+
+      <div class="bg-white p-3 rounded-2xl border border-slate-200 flex flex-wrap gap-2 items-center justify-between">
+        <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll py-1" id="notesSubjectFilters"></div>
+        <div class="flex items-center gap-1" id="notesClassFilters"></div>
+      </div>
+
+      <div id="notesContainer" class="space-y-3"></div>
+    </section>
+
+    <!-- IN-APP PDF VIEWER VIEW -->
+    <section id="viewNoteDetail" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between flex-wrap gap-2 shadow-sm">
+        <div>
+          <span id="noteDetailBreadcrumb" class="text-[11px] font-bold text-indigo-600 block uppercase"></span>
+          <h2 id="noteDetailTitle" class="text-base md:text-lg font-bold text-slate-800"></h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnTakeTestFromNote" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow flex items-center gap-1">
+            <span>✍️</span> <span>Take Chapter Test</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-indigo-50 border border-indigo-200 p-2.5 rounded-xl flex items-center justify-between text-xs">
+        <span class="text-indigo-900 font-semibold">Agar screen par PDF choti ya load na ho:</span>
+        <a id="btnExternalDriveLink" href="#" target="_blank" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-sm flex items-center gap-1">
+          <span>↗ Open Fullscreen PDF</span>
+        </a>
+      </div>
+
+      <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
+        <iframe id="pdfViewerFrame" src="" class="w-full h-[72vh] rounded-xl border border-slate-100 bg-slate-50" allow="autoplay"></iframe>
+      </div>
+    </section>
+
     <!-- 6. ACTIVE TEST VIEW -->
     <section id="viewTest" class="hidden space-y-4">
+      <!-- Previous Attempt Banner -->
+      <div id="prevScoreAlertBanner" class="hidden p-3 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-900 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-2">
+          <span class="text-base">📊</span>
+          <span id="prevScoreAlertText">Pichli baar aapne is test me score kiya tha.</span>
+        </div>
+      </div>
+
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div>
           <span id="testContextTitle" class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 block"></span>
@@ -184,10 +255,11 @@
         <div>
           <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 text-xs">
             <span id="badgeQuestionNumber" class="px-2.5 py-1 bg-slate-900 text-white rounded-lg font-bold">Question 1/1</span>
-            <span id="badgeTopic" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-medium"></span>
+            <div id="badgeTopic" class="flex items-center gap-1.5"></div>
           </div>
 
-          <div id="questionText" class="text-base font-semibold text-slate-800 leading-relaxed mb-6 select-none">
+          <!-- Multiline Statement Support for CTET Format -->
+          <div id="questionText" class="text-sm sm:text-base font-semibold text-slate-800 leading-relaxed mb-6 select-none render-multiline">
             Loading question...
           </div>
 
@@ -214,13 +286,13 @@
         </div>
       </div>
 
-      <!-- Question Palette -->
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-3 text-xs font-bold text-slate-600">
           <span>Question Palette</span>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 flex-wrap">
             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span> Answered</span>
             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-purple-600 inline-block"></span> Review</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-purple-200 border border-purple-500 inline-block"></span> Pichli Baar Review Kiya</span>
             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-slate-200 inline-block"></span> Pending</span>
           </div>
         </div>
@@ -235,10 +307,7 @@
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span class="text-xs font-bold text-indigo-600 uppercase">Test Result</span>
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
-                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✔</span>
-                Completed
-              </span>
+              <span id="resultCompletionBadge" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold"></span>
             </div>
             <h2 id="resultExamTitle" class="text-xl font-bold text-slate-900 mt-1"></h2>
             <p id="resultFeedback" class="text-xs text-slate-600 mt-1"></p>
@@ -265,15 +334,15 @@
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100">
+        <div class="flex flex-wrap items-center gap-2.5 pt-3 border-t border-slate-100">
           <button onclick="navTo('viewDashboard')" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800">
-            Go to Dashboard
+            Dashboard
           </button>
           <button onclick="restartCurrentTestWithShuffle()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow">
-            🔄 Retake Test (Shuffled)
+            🔄 Retake Test
           </button>
           <button onclick="toggleSolutions()" class="px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-100">
-            View Solutions & Answers
+            View Solutions
           </button>
         </div>
       </div>
@@ -285,6 +354,47 @@
     </section>
 
   </main>
+
+  <!-- STUDENT PROFILE MODAL -->
+  <div id="profileModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-100">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">👤</span>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Student Profile</h3>
+          </div>
+        </div>
+        <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
+      </div>
+
+      <div class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Student Full Name *</label>
+          <input type="text" id="inputStudentName" placeholder="Jaise: Tushar Kumar" class="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Email ID *</label>
+          <input type="email" id="inputStudentEmail" placeholder="student@example.com" class="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-1">
+          <div class="flex justify-between font-medium"><span>Completed Tests:</span> <strong id="profileCompletedCount">0</strong></div>
+          <div class="flex justify-between font-medium"><span>Average Accuracy:</span> <strong id="profileAvgAcc">0%</strong></div>
+          <div class="flex justify-between font-medium"><span>Best Percentage:</span> <strong id="profileBestScore">0%</strong></div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button onclick="saveStudentProfile()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition">
+            Save Profile
+          </button>
+          <button onclick="closeProfileModal()" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Submit Confirmation Modal -->
   <div id="submitModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -300,6 +410,14 @@
   </div>
 
   <script>
+    function getStudentProfile() {
+      try {
+        return JSON.parse(localStorage.getItem('ctet_student_profile') || '{"name":"","email":""}');
+      } catch (e) {
+        return { name: '', email: '' };
+      }
+    }
+
     function getCompletedTests() {
       try {
         return JSON.parse(localStorage.getItem('ctet_completed_tests') || '{}');
@@ -308,45 +426,62 @@
       }
     }
 
-    function markTestCompleted(testKey) {
+    function markTestCompleted(testKey, scoreInfo) {
       if (!testKey) return;
+      scoreInfo = scoreInfo || {};
       const data = getCompletedTests();
-      data[testKey] = true;
+      data[testKey] = {
+        completed: true,
+        testTitle: activeTest.title || testKey,
+        score: scoreInfo.score || 0,
+        total: scoreInfo.total || 0,
+        accuracy: scoreInfo.accuracy || 0,
+        attemptedCount: scoreInfo.attemptedCount || 0,
+        markedReviewIds: Array.from(activeTest.markedReview || []).map(function(idx) {
+          return activeTest.questions[idx] ? activeTest.questions[idx].id : null;
+        }).filter(Boolean),
+        timestamp: new Date().toISOString()
+      };
       try {
         localStorage.setItem('ctet_completed_tests', JSON.stringify(data));
       } catch (e) {}
     }
 
-    function isTestCompleted(testKey, questionCount = 1) {
-      if (!questionCount || questionCount <= 0) return false;
+    // Status Badge Logic (Point 5)
+    function renderCustomStatusBadge(testKey, totalQCount) {
+      if (!totalQCount || totalQCount <= 0) return '';
       const data = getCompletedTests();
-      return !!data[testKey];
+      const testRecord = data[testKey];
+      if (!testRecord) return '';
+
+      const attempted = testRecord.attemptedCount !== undefined ? testRecord.attemptedCount : testRecord.score;
+      const total = testRecord.total || totalQCount;
+      const pctAttempted = total > 0 ? (attempted / total) * 100 : 0;
+
+      if (pctAttempted >= 100) {
+        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm shrink-0">' +
+               '<span class="w-3.5 h-3.5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[8px] font-black leading-none">✔</span>' +
+               '<span>Done (' + attempted + '/' + total + ')</span></span>';
+      } else if (pctAttempted >= 75) {
+        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 shadow-sm shrink-0">' +
+               '<span class="w-2 h-2 rounded-full bg-amber-500"></span>' +
+               '<span>Few Remaining (' + attempted + '/' + total + ')</span></span>';
+      } else {
+        return '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300 shadow-sm shrink-0">' +
+               '<span class="w-2 h-2 rounded-full bg-rose-500"></span>' +
+               '<span>Pending (' + attempted + '/' + total + ')</span></span>';
+      }
     }
 
-    function renderGreenCheckBadge(isDone) {
-      if (!isDone) return '';
-      return `
-        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-sm shrink-0">
-          <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-black leading-none">✔</span>
-          <span>Done</span>
-        </span>
-      `;
+    // Previous score display (Point 4)
+    function renderPreviousScoreSnippet(testKey) {
+      const data = getCompletedTests();
+      const record = data[testKey];
+      if (!record) return '';
+      return '<div class="mt-2 px-2.5 py-1.5 bg-slate-100 rounded-xl text-[11px] font-medium text-slate-700 flex items-center justify-between border border-slate-200">' +
+             '<span>Pichla Score: <strong class="text-indigo-800 font-bold">' + record.score + ' / ' + record.total + '</strong></span>' +
+             '<span class="text-emerald-700 font-black">' + record.accuracy + '%</span></div>';
     }
-
-    // --- FIREBASE INITIALIZATION ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyBPjVr13qlEutj-JnQ0SmU1miTDLBD78ak",
-      authDomain: "ctet-sst-portal.firebaseapp.com",
-      databaseURL: "https://ctet-sst-portal-default-rtdb.firebaseio.com",
-      projectId: "ctet-sst-portal",
-      storageBucket: "ctet-sst-portal.firebasestorage.app",
-      messagingSenderId: "303323944066",
-      appId: "1:303323944066:web:fc48860e48c989f32a509b",
-      measurementId: "G-V7T7E9KJRL"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
     const DEFAULT_APP_DATA = {
       History: {
@@ -434,101 +569,26 @@
       }
     };
 
-    let APP_DATA = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
-    let QUESTION_BANK = [];
+    let APP_DATA = JSON.parse(localStorage.getItem('ctet_admin_app_data') || JSON.stringify(DEFAULT_APP_DATA));
+    let NOTES_BANK = [];
+    let QUESTION_BANK = JSON.parse(localStorage.getItem('ctet_admin_questions') || '[]');
 
-    // Helper: Sort chapters naturally by chapter number
     function extractChapterNum(name) {
       if (!name) return 9999;
       const m = name.match(/(?:Chapter|पाठ|Lesson|अध्याय)\s*(\d+)/i) || name.match(/\d+/);
       return m ? parseInt(m[1] || m[0], 10) : 9999;
     }
 
-    function initFirebaseSync() {
-      db.ref('subjects').on('value', snapshot => {
-        const cloudSubjects = snapshot.val();
-        if (cloudSubjects) {
-          Object.entries(cloudSubjects).forEach(([key, sub]) => {
-            if (!APP_DATA[key]) {
-              APP_DATA[key] = {
-                title: sub.title || key,
-                icon: sub.icon || '📚',
-                isActive: sub.isActive !== undefined ? sub.isActive : true,
-                classes: {}
-              };
-            } else {
-              APP_DATA[key].title = sub.title || APP_DATA[key].title;
-              APP_DATA[key].icon = sub.icon || APP_DATA[key].icon;
-              APP_DATA[key].isActive = sub.isActive !== undefined ? sub.isActive : true;
-            }
-          });
-          renderDashboard();
-        }
-      });
-
-      db.ref('chapters').on('value', snapshot => {
-        const cloudChapters = snapshot.val();
-        APP_DATA = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
-
-        db.ref('subjects').once('value', sSnap => {
-          const sData = sSnap.val();
-          if (sData) {
-            Object.entries(sData).forEach(([k, s]) => {
-              if (!APP_DATA[k]) APP_DATA[k] = { title: s.title, icon: s.icon, isActive: s.isActive !== false, classes: {} };
-              else APP_DATA[k].isActive = s.isActive !== false;
-            });
-          }
-
-          if (cloudChapters) {
-            Object.values(cloudChapters).forEach(ch => {
-              if (ch.deleted) {
-                if (APP_DATA[ch.subject] && APP_DATA[ch.subject].classes && APP_DATA[ch.subject].classes[ch.class]) {
-                  APP_DATA[ch.subject].classes[ch.class] = APP_DATA[ch.subject].classes[ch.class].filter(c => c.id !== ch.id);
-                }
-                return;
-              }
-
-              if (!APP_DATA[ch.subject]) {
-                APP_DATA[ch.subject] = { title: ch.subject, icon: '📚', isActive: true, classes: {} };
-              }
-              if (!APP_DATA[ch.subject].classes) {
-                APP_DATA[ch.subject].classes = {};
-              }
-              if (!APP_DATA[ch.subject].classes[ch.class]) {
-                APP_DATA[ch.subject].classes[ch.class] = [];
-              }
-
-              const idx = APP_DATA[ch.subject].classes[ch.class].findIndex(c => c.id === ch.id);
-              if (idx !== -1) {
-                APP_DATA[ch.subject].classes[ch.class][idx].name = ch.name;
-              } else {
-                APP_DATA[ch.subject].classes[ch.class].push({ id: ch.id, name: ch.name });
-              }
-            });
-          }
-          renderDashboard();
-        });
-      });
-
-      db.ref('questions').on('value', snapshot => {
-        const cloudData = snapshot.val();
-        QUESTION_BANK = [];
-        if (cloudData) {
-          Object.keys(cloudData).forEach(key => {
-            const q = cloudData[key];
-            QUESTION_BANK.push({ ...q, id: q.id || key });
-          });
-        }
-        renderDashboard();
-      });
-    }
-
     let appState = { testsTaken: 0, totalScoreSum: 0, bestPercentage: 0 };
     let navStack = ['viewDashboard'];
+    let currentSubjectKey = 'History';
+    let currentClassNum = 6;
 
-    function navTo(viewId, pushHistory = true) {
-      const views = ['viewDashboard', 'viewSets', 'viewPyq', 'viewClasses', 'viewChapters', 'viewTest', 'viewResult'];
-      views.forEach(v => {
+    // Mobile Navigation & History Stack (Point 8)
+    function navTo(viewId, pushHistory) {
+      if (pushHistory === undefined) pushHistory = true;
+      const views = ['viewDashboard', 'viewSets', 'viewPyq', 'viewClasses', 'viewChapters', 'viewTest', 'viewResult', 'viewNotesHub', 'viewNoteDetail'];
+      views.forEach(function(v) {
         const el = document.getElementById(v);
         if (el) el.classList.toggle('hidden', v !== viewId);
       });
@@ -536,9 +596,11 @@
       const stats = document.getElementById('statsRow');
       if (stats) stats.classList.toggle('hidden', viewId !== 'viewDashboard');
 
-      if (pushHistory && navStack[navStack.length - 1] !== viewId) {
-        navStack.push(viewId);
-        window.history.pushState({ viewId }, '');
+      if (pushHistory) {
+        if (navStack[navStack.length - 1] !== viewId) {
+          navStack.push(viewId);
+          window.history.pushState({ viewId: viewId, currentSubjectKey: currentSubjectKey, currentClassNum: currentClassNum }, '');
+        }
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -548,15 +610,67 @@
       if (navStack.length > 1) {
         navStack.pop();
         const prev = navStack[navStack.length - 1];
-        if (prev === 'viewSets') openSetsView();
-        else if (prev === 'viewPyq') openPyqView();
-        else if (prev === 'viewChapters') openChaptersView(currentClassNum);
-        else if (prev === 'viewClasses') openClassesView(currentSubjectKey);
+        if (prev === 'viewSets') openSetsView(false);
+        else if (prev === 'viewPyq') openPyqView(false);
+        else if (prev === 'viewChapters') openChaptersView(currentClassNum, false);
+        else if (prev === 'viewClasses') openClassesView(currentSubjectKey, false);
+        else if (prev === 'viewNotesHub') openNotesHub(false);
         else navTo(prev, false);
       } else {
         navTo('viewDashboard', false);
       }
     };
+
+    function openProfileModal() {
+      const profile = getStudentProfile();
+      document.getElementById('inputStudentName').value = profile.name || '';
+      document.getElementById('inputStudentEmail').value = profile.email || '';
+      
+      const comp = getCompletedTests();
+      document.getElementById('profileCompletedCount').textContent = Object.keys(comp).length;
+      document.getElementById('profileAvgAcc').textContent = appState.testsTaken > 0 ? Math.round(appState.totalScoreSum / appState.testsTaken) + '%' : '0%';
+      document.getElementById('profileBestScore').textContent = appState.bestPercentage + '%';
+
+      document.getElementById('profileModal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profileModal').classList.add('hidden');
+    }
+
+    function saveStudentProfile() {
+      const name = document.getElementById('inputStudentName').value.trim();
+      const email = document.getElementById('inputStudentEmail').value.trim();
+
+      if (!name) {
+        alert('Kripya apna naam daalein!');
+        return;
+      }
+
+      const profile = { name: name, email: email, updatedAt: new Date().toISOString() };
+      localStorage.setItem('ctet_student_profile', JSON.stringify(profile));
+
+      updateHeaderProfileUI();
+      closeProfileModal();
+      alert('Profile save ho gayi hai!');
+    }
+
+    function updateHeaderProfileUI() {
+      const profile = getStudentProfile();
+      const nameEl = document.getElementById('headerStudentName');
+      const avatarEl = document.getElementById('headerAvatar');
+      const greetEl = document.getElementById('dashGreeting');
+
+      if (profile.name) {
+        nameEl.textContent = profile.name;
+        avatarEl.textContent = profile.name.charAt(0).toUpperCase();
+        if (greetEl) greetEl.textContent = 'Namaste, ' + profile.name + '!';
+      } else {
+        nameEl.textContent = 'Set Profile';
+        avatarEl.textContent = '👤';
+        if (greetEl) greetEl.textContent = 'Namaste, Student!';
+      }
+    }
 
     function renderDashboard() {
       document.getElementById('statTests').textContent = appState.testsTaken;
@@ -565,186 +679,253 @@
       document.getElementById('statTotalQues').textContent = QUESTION_BANK.length;
 
       const grid = document.getElementById('subjectGrid');
-      const activeSubjects = Object.entries(APP_DATA).filter(([k, v]) => v.isActive !== false);
+      const activeSubjects = Object.entries(APP_DATA).filter(function(entry) { return entry[1].isActive !== false; });
 
-      grid.innerHTML = activeSubjects.map(([key, data]) => {
-        const qCount = QUESTION_BANK.filter(q => q.subject === key).length;
-        const classesPresent = Object.keys(data.classes || {}).sort((a,b) => Number(a) - Number(b));
+      grid.innerHTML = activeSubjects.map(function(entry) {
+        const key = entry[0];
+        const data = entry[1];
+        // Strict isolation: Only count chapter practice questions
+        const qCount = QUESTION_BANK.filter(function(q) {
+          return q.subject === key && q.targetType !== 'set' && q.targetType !== 'pyq';
+        }).length;
+        const classesPresent = Object.keys(data.classes || {}).sort(function(a,b) { return Number(a) - Number(b); });
         const classSubtitle = classesPresent.length > 0 
-          ? `Classes: ${classesPresent.join(', ')} • Chapters` 
+          ? 'Classes: ' + classesPresent.join(', ') + ' • Chapters' 
           : 'Chapters & Practice';
 
-        return `
-          <div onclick="openClassesView('${key}')" class="bg-slate-50 hover:bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col justify-between">
-            <div>
-              <div class="text-3xl mb-2">${data.icon || '📚'}</div>
-              <h4 class="font-bold text-slate-800 text-sm">${data.title}</h4>
-              <p class="text-xs text-slate-500 mt-1">${classSubtitle}</p>
-            </div>
-            <div class="mt-4 pt-2.5 border-t border-slate-200 flex items-center justify-between text-xs">
-              <span class="text-indigo-600 font-semibold">${qCount} Questions</span>
-              <span class="text-slate-500 font-medium">Explore Classes →</span>
-            </div>
-          </div>
-        `;
+        return '<div onclick="openClassesView(\'' + key + '\')" class="bg-slate-50 hover:bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col justify-between">' +
+               '<div><div class="text-3xl mb-2">' + (data.icon || '📚') + '</div>' +
+               '<h4 class="font-bold text-slate-800 text-sm">' + data.title + '</h4>' +
+               '<p class="text-xs text-slate-500 mt-1">' + classSubtitle + '</p></div>' +
+               '<div class="mt-4 pt-2.5 border-t border-slate-200 flex items-center justify-between text-xs">' +
+               '<span class="text-indigo-600 font-semibold">' + qCount + ' Questions</span>' +
+               '<span class="text-slate-500 font-medium">Explore Classes →</span></div></div>';
+      }).join('');
+
+      updateHeaderProfileUI();
+    }
+
+    function cleanDriveUrl(rawUrl) {
+      if (!rawUrl) return '';
+      const driveMatch = rawUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (driveMatch && driveMatch[1]) {
+        return 'https://drive.google.com/file/d/' + driveMatch[1] + '/preview';
+      }
+      return rawUrl;
+    }
+
+    let selectedNotesSubject = 'All';
+    let selectedNotesClass = 'All';
+
+    function openNotesHub(push) {
+      if (push === undefined) push = true;
+      renderNotesFilters();
+      renderNotesList();
+      navTo('viewNotesHub', push);
+    }
+
+    function renderNotesFilters() {
+      const subContainer = document.getElementById('notesSubjectFilters');
+      const subjects = ['All'].concat(Object.keys(APP_DATA));
+      subContainer.innerHTML = subjects.map(function(s) {
+        return '<button onclick="filterNotesBySubject(\'' + s + '\')" class="px-3 py-1 rounded-lg text-xs font-bold shrink-0 transition ' +
+               (selectedNotesSubject === s ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200') + '">' + s + '</button>';
+      }).join('');
+
+      const classContainer = document.getElementById('notesClassFilters');
+      const classes = ['All', '6', '7', '8'];
+      classContainer.innerHTML = classes.map(function(c) {
+        return '<button onclick="filterNotesByClass(\'' + c + '\')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ' +
+               (selectedNotesClass === c ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + '">' +
+               (c === 'All' ? 'All Classes' : 'Class ' + c) + '</button>';
       }).join('');
     }
 
-    // 1. FULL MOCK TEST SETS (1 to 10)
-    function openSetsView() {
+    function filterNotesBySubject(sub) {
+      selectedNotesSubject = sub;
+      renderNotesFilters();
+      renderNotesList();
+    }
+
+    function filterNotesByClass(cls) {
+      selectedNotesClass = cls;
+      renderNotesFilters();
+      renderNotesList();
+    }
+
+    function renderNotesList() {
+      const container = document.getElementById('notesContainer');
+      const adminNotes = JSON.parse(localStorage.getItem('ctet_admin_notes') || '[]');
+      const allNotes = adminNotes.concat(NOTES_BANK);
+
+      const filtered = allNotes.filter(function(n) {
+        const matchSub = selectedNotesSubject === 'All' || n.subject === selectedNotesSubject;
+        const matchCls = selectedNotesClass === 'All' || String(n.class) === String(selectedNotesClass);
+        return matchSub && matchCls;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500 text-xs">' +
+                              'Is category me abhi koi PDF notes upload nahi hain. Admin panel se add hote hi yahan show ho jayenge.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(function(note) {
+        return '<div class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-400 shadow-sm flex flex-wrap items-center justify-between gap-3">' +
+               '<div><div class="flex items-center gap-2 mb-1">' +
+               '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">' + note.subject + '</span>' +
+               '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800">Class ' + note.class + '</span></div>' +
+               '<h4 class="font-bold text-slate-800 text-sm">' + note.title + '</h4>' +
+               '<p class="text-xs text-slate-500 mt-0.5">High Quality Visual PDF Notes (Text + Diagrams)</p></div>' +
+               '<div class="flex items-center gap-2">' +
+               '<button onclick="viewSingleNote(\'' + note.id + '\')" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow flex items-center gap-1">' +
+               '<span>📖 Open PDF</span></button></div></div>';
+      }).join('');
+    }
+
+    function viewSingleNote(noteId) {
+      const adminNotes = JSON.parse(localStorage.getItem('ctet_admin_notes') || '[]');
+      const allNotes = adminNotes.concat(NOTES_BANK);
+      const note = allNotes.find(function(n) { return n.id === noteId; });
+      if (!note) return;
+
+      document.getElementById('noteDetailBreadcrumb').textContent = note.subject + ' • Class ' + note.class;
+      document.getElementById('noteDetailTitle').textContent = note.title;
+
+      const embedUrl = cleanDriveUrl(note.pdfUrl);
+      document.getElementById('pdfViewerFrame').src = embedUrl;
+
+      const extBtn = document.getElementById('btnExternalDriveLink');
+      if (extBtn) extBtn.href = note.pdfUrl;
+
+      const btnTest = document.getElementById('btnTakeTestFromNote');
+      btnTest.onclick = function() {
+        startChapterTest(note.chapterId, note.title);
+      };
+
+      navTo('viewNoteDetail');
+    }
+
+    // Full Mock Sets (Point 1 & Point 2: Independent, Exact upload numbering)
+    function openSetsView(push) {
+      if (push === undefined) push = true;
       const container = document.getElementById('setsContainer');
       let html = '';
       for (let i = 1; i <= 10; i++) {
-        const count = QUESTION_BANK.filter(q => Number(q.mockSet) === i).length;
-        const testKey = `mockset_${i}`;
-        const isDone = isTestCompleted(testKey, count);
+        const count = QUESTION_BANK.filter(function(q) { return Number(q.mockSet) === i; }).length;
+        const testKey = 'mockset_' + i;
 
-        html += `
-          <div class="bg-white p-4 rounded-xl border ${isDone ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-200'} shadow-sm flex flex-col justify-between gap-3">
-            <div>
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">CTET SST SET ${i}</span>
-                ${renderGreenCheckBadge(isDone)}
-              </div>
-              <h4 class="font-bold text-slate-800 text-sm mt-1">Full Mock Test - Set ${i}</h4>
-              <p class="text-xs text-slate-500 mt-0.5">Duration: <strong>25 Mins</strong> • Questions: <strong>${count}</strong></p>
-            </div>
-            <div class="pt-2 border-t border-slate-100">
-              <button onclick="startMockSet(${i})" class="w-full py-2 ${isDone ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded-lg text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">
-                ${isDone ? '<span>Retake Test</span>' : '<span>Start Mock Test</span>'} <span>→</span>
-              </button>
-            </div>
-          </div>
-        `;
+        html += '<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between gap-3">' +
+                '<div><div class="flex items-center justify-between gap-2">' +
+                '<span class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">CTET SST SET ' + i + '</span>' +
+                renderCustomStatusBadge(testKey, count) + '</div>' +
+                '<h4 class="font-bold text-slate-800 text-sm mt-1">Full Mock Test - Set ' + i + '</h4>' +
+                '<p class="text-xs text-slate-500 mt-0.5">Duration: <strong>25 Mins</strong> • Questions: <strong>' + count + '</strong></p>' +
+                renderPreviousScoreSnippet(testKey) + '</div>' +
+                '<div class="pt-2 border-t border-slate-100">' +
+                '<button onclick="startMockSet(' + i + ')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">' +
+                '<span>Start Mock Test</span> <span>→</span></button></div></div>';
       }
       container.innerHTML = html;
-      navTo('viewSets');
+      navTo('viewSets', push);
     }
 
-    // 2. PYQ YEARS (2021 to 2026)
-    function openPyqView() {
+    // PYQ Exam (Point 1 & Point 2: Independent, Exact upload numbering)
+    function openPyqView(push) {
+      if (push === undefined) push = true;
       const container = document.getElementById('pyqContainer');
       const years = ['2021', '2022', '2023', '2024', '2025', '2026'];
-      container.innerHTML = years.map(yr => {
-        const count = QUESTION_BANK.filter(q => String(q.year) === yr).length;
-        const testKey = `pyq_${yr}`;
-        const isDone = isTestCompleted(testKey, count);
+      container.innerHTML = years.map(function(yr) {
+        const count = QUESTION_BANK.filter(function(q) { return String(q.year) === yr; }).length;
+        const testKey = 'pyq_' + yr;
 
-        return `
-          <div class="bg-white p-4 rounded-xl border ${isDone ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-200'} shadow-sm flex flex-col justify-between gap-3">
-            <div>
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-[10px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">CTET Official Paper</span>
-                ${renderGreenCheckBadge(isDone)}
-              </div>
-              <h4 class="font-bold text-slate-800 text-sm mt-1">CTET Paper 2 (${yr})</h4>
-              <p class="text-xs text-slate-500 mt-0.5">Duration: <strong>25 Mins</strong> • Questions: <strong>${count}</strong></p>
-            </div>
-            <div class="pt-2 border-t border-slate-100">
-              <button onclick="startPyqExam('${yr}')" class="w-full py-2 ${isDone ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-purple-600 hover:bg-purple-700'} text-white text-xs font-bold rounded-lg transition shadow-sm flex items-center justify-center gap-1.5">
-                ${isDone ? '<span>Retake Test</span>' : '<span>Start Mock Test</span>'} <span>→</span>
-              </button>
-            </div>
-          </div>
-        `;
+        return '<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between gap-3">' +
+               '<div><div class="flex items-center justify-between gap-2">' +
+               '<span class="text-[10px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">CTET Official Paper</span>' +
+               renderCustomStatusBadge(testKey, count) + '</div>' +
+               '<h4 class="font-bold text-slate-800 text-sm mt-1">CTET Paper 2 (' + yr + ')</h4>' +
+               '<p class="text-xs text-slate-500 mt-0.5">Duration: <strong>25 Mins</strong> • Questions: <strong>' + count + '</strong></p>' +
+               renderPreviousScoreSnippet(testKey) + '</div>' +
+               '<div class="pt-2 border-t border-slate-100">' +
+               '<button onclick="startPyqExam(\'' + yr + '\')" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg transition shadow-sm flex items-center justify-center gap-1.5">' +
+               '<span>Start Mock Test</span> <span>→</span></button></div></div>';
       }).join('');
-      navTo('viewPyq');
+      navTo('viewPyq', push);
     }
 
-    // 3. CLASSES VIEW
-    let currentSubjectKey = 'History';
-
-    function openClassesView(subjectKey) {
+    function openClassesView(subjectKey, push) {
+      if (push === undefined) push = true;
       currentSubjectKey = subjectKey;
       const subj = APP_DATA[subjectKey] || { title: subjectKey, icon: '📚', classes: {} };
-      document.getElementById('classSubjectTitle').textContent = `${subj.icon || '📚'} ${subj.title}`;
+      document.getElementById('classSubjectTitle').textContent = (subj.icon || '📚') + ' ' + subj.title;
 
       const container = document.getElementById('classesListContainer');
-      const classKeys = Object.keys(subj.classes || {}).map(Number).sort((a,b) => a - b);
+      const classKeys = Object.keys(subj.classes || {}).map(Number).sort(function(a,b) { return a - b; });
       const classesToDisplay = classKeys.length > 0 ? classKeys : [6, 7, 8];
 
-      container.innerHTML = classesToDisplay.map(cls => {
+      container.innerHTML = classesToDisplay.map(function(cls) {
         const chList = (subj.classes && subj.classes[cls]) ? subj.classes[cls] : [];
-        const qCount = QUESTION_BANK.filter(q => q.subject === subjectKey && Number(q.class) === cls).length;
-        return `
-          <div onclick="openChaptersView(${cls})" class="bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col justify-between">
-            <div>
-              <span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">Class ${cls}</span>
-              <h3 class="text-base font-bold text-slate-800 mt-2">Class ${cls}: ${subj.title.split(' ')[0]}</h3>
-              <p class="text-xs text-slate-500 mt-1">${chList.length} Chapters Available</p>
-            </div>
-            <div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span class="font-semibold text-slate-600">${qCount} Questions</span>
-              <span class="text-indigo-600 font-bold">Open Chapters →</span>
-            </div>
-          </div>
-        `;
+        const qCount = QUESTION_BANK.filter(function(q) {
+          return q.subject === subjectKey && Number(q.class) === cls && q.targetType !== 'set' && q.targetType !== 'pyq';
+        }).length;
+        return '<div onclick="openChaptersView(' + cls + ')" class="bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col justify-between">' +
+               '<div><span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">Class ' + cls + '</span>' +
+               '<h3 class="text-base font-bold text-slate-800 mt-2">Class ' + cls + ': ' + subj.title.split(' ')[0] + '</h3>' +
+               '<p class="text-xs text-slate-500 mt-1">' + chList.length + ' Chapters Available</p></div>' +
+               '<div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">' +
+               '<span class="font-semibold text-slate-600">' + qCount + ' Questions</span>' +
+               '<span class="text-indigo-600 font-bold">Open Chapters →</span></div></div>';
       }).join('');
 
-      navTo('viewClasses');
+      navTo('viewClasses', push);
     }
 
-    // 4. CHAPTERS VIEW (Sorted Chapter 1, 2, 3...)
-    let currentClassNum = 6;
-
-    function openChaptersView(classNum) {
+    function openChaptersView(classNum, push) {
+      if (push === undefined) push = true;
       currentClassNum = classNum;
       const subj = APP_DATA[currentSubjectKey] || { title: currentSubjectKey, icon: '📚', classes: {} };
-      document.getElementById('chapSubjectClassTitle').textContent = `${subj.icon || '📚'} ${subj.title} • Class ${classNum}`;
-      document.getElementById('revisionQuestTitle').textContent = `Class ${classNum} - All Chapter Revision Quest`;
+      document.getElementById('chapSubjectClassTitle').textContent = (subj.icon || '📚') + ' ' + subj.title + ' • Class ' + classNum;
+      document.getElementById('revisionQuestTitle').textContent = 'Class ' + classNum + ' - All Chapter Revision Quest';
 
-      const questPoolCount = QUESTION_BANK.filter(q => q.subject === currentSubjectKey && Number(q.class) === Number(currentClassNum)).length;
-      const questKey = `quest_${currentSubjectKey}_${classNum}`;
-      const questDone = isTestCompleted(questKey, questPoolCount);
-      document.getElementById('questStatusBadge').innerHTML = renderGreenCheckBadge(questDone);
+      // Isolation: Only count chapter practice questions
+      const questPoolCount = QUESTION_BANK.filter(function(q) {
+        return q.subject === currentSubjectKey && Number(q.class) === Number(currentClassNum) && q.targetType !== 'set' && q.targetType !== 'pyq';
+      }).length;
+      const questKey = 'quest_' + currentSubjectKey + '_' + classNum;
+      document.getElementById('questStatusBadge').innerHTML = renderCustomStatusBadge(questKey, questPoolCount);
 
       const listContainer = document.getElementById('chaptersListContainer');
-      let chapters = (subj.classes && subj.classes[classNum]) ? [...subj.classes[classNum]] : [];
-
-      // Accurate Natural Numeric Sorting (1, 2, 3... 10)
-      chapters.sort((a, b) => {
-        const numA = extractChapterNum(a.name);
-        const numB = extractChapterNum(b.name);
-        return numA - numB;
-      });
+      let chapters = (subj.classes && subj.classes[classNum]) ? subj.classes[classNum].slice() : [];
+      chapters.sort(function(a, b) { return extractChapterNum(a.name) - extractChapterNum(b.name); });
 
       if (chapters.length === 0) {
-        listContainer.innerHTML = `
-          <div class="bg-white p-6 rounded-xl border border-slate-200 text-center text-slate-500 text-xs">
-            No chapters found for Class ${classNum}. You can add chapters via Admin panel.
-          </div>
-        `;
+        listContainer.innerHTML = '<div class="bg-white p-6 rounded-xl border border-slate-200 text-center text-slate-500 text-xs">' +
+                                  'No chapters found for Class ' + classNum + '.</div>';
       } else {
-        listContainer.innerHTML = chapters.map((ch, idx) => {
-          const count = QUESTION_BANK.filter(q => q.chapterId === ch.id).length;
-          const testKey = `chapter_${ch.id}`;
-          const isDone = isTestCompleted(testKey, count);
+        listContainer.innerHTML = chapters.map(function(ch, idx) {
+          const count = QUESTION_BANK.filter(function(q) {
+            return q.chapterId === ch.id && q.targetType !== 'set' && q.targetType !== 'pyq';
+          }).length;
+          const testKey = 'chapter_' + ch.id;
           const chNum = extractChapterNum(ch.name) !== 9999 ? extractChapterNum(ch.name) : (idx + 1);
 
-          return `
-            <div class="bg-white p-3.5 rounded-xl border ${isDone ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-200'} shadow-sm flex flex-wrap items-center justify-between gap-2">
-              <div class="flex-1 min-w-[200px]">
-                <div class="flex items-center gap-2">
-                  <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Lesson ${chNum}</span>
-                  ${renderGreenCheckBadge(isDone)}
-                </div>
-                <h4 class="font-bold text-slate-800 text-sm mt-1">${ch.name}</h4>
-                <p class="text-[11px] text-slate-400">Duration: 15 Mins • Available Questions: ${count}</p>
-              </div>
-              <div>
-                <button onclick="startChapterTest('${ch.id}', '${ch.name.replace(/'/g, "\\'")}')" class="px-4 py-1.5 ${isDone ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700'} text-xs font-bold rounded-lg transition shadow-sm">
-                  ${isDone ? 'Retake Test →' : 'Start Test →'}
-                </button>
-              </div>
-            </div>
-          `;
+          return '<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-2">' +
+                 '<div class="flex-1 min-w-[200px]">' +
+                 '<div class="flex items-center gap-2">' +
+                 '<span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Lesson ' + chNum + '</span>' +
+                 renderCustomStatusBadge(testKey, count) + '</div>' +
+                 '<h4 class="font-bold text-slate-800 text-sm mt-1">' + ch.name + '</h4>' +
+                 '<p class="text-[11px] text-slate-400">Duration: 15 Mins • Available Questions: ' + count + '</p>' +
+                 renderPreviousScoreSnippet(testKey) + '</div>' +
+                 '<div class="flex items-center gap-2">' +
+                 '<button onclick="startChapterTest(\'' + ch.id + '\', \'' + ch.name.replace(/'/g, "\\'") + '\')" class="px-4 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 text-xs font-bold rounded-lg transition shadow-sm">' +
+                 'Start Test →</button></div></div>';
         }).join('');
       }
 
-      navTo('viewChapters');
+      navTo('viewChapters', push);
     }
 
-    // --- TEST ENGINE ---
     let globalTimerInterval = null;
     let timerTargetEpoch = 0;
     let timerRemainingSeconds = 0;
@@ -759,7 +940,9 @@
       currentIndex: 0,
       isPaused: false,
       originalPool: [],
-      durationMinutes: 15
+      durationMinutes: 15,
+      shouldShuffle: true,
+      prevMarkedIds: []
     };
 
     function clearTimerEngine() {
@@ -770,53 +953,86 @@
     }
 
     function shuffleArray(arr) {
-      const copy = [...arr];
+      const copy = arr.slice();
       for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
+        const temp = copy[i];
+        copy[i] = copy[j];
+        copy[j] = temp;
       }
       return copy;
     }
 
-    function prepareQuestionWithShuffledOptions(rawQ) {
-      const opts = (rawQ.options || []).map((opt, i) => ({
-        text: opt,
-        isCorrect: i === Number(rawQ.correctIndex)
-      }));
+    // Set / PYQ tests keep EXACT question & options order; chapter practice shuffles options (Point 2)
+    function prepareQuestion(rawQ, shouldShuffle) {
+      if (!shouldShuffle) {
+        return {
+          id: rawQ.id,
+          text: rawQ.text,
+          options: (rawQ.options || []).slice(),
+          correctIndex: Number(rawQ.correctIndex),
+          explanation: rawQ.explanation || 'NCERT Textbook Reference.',
+          topic: rawQ.subject || 'SST'
+        };
+      }
+
+      const opts = (rawQ.options || []).map(function(opt, i) {
+        return { text: opt, isCorrect: i === Number(rawQ.correctIndex) };
+      });
       const shuffledOpts = shuffleArray(opts);
-      const newCorrectIndex = shuffledOpts.findIndex(o => o.isCorrect);
+      const newCorrectIndex = shuffledOpts.findIndex(function(o) { return o.isCorrect; });
 
       return {
         id: rawQ.id,
         text: rawQ.text,
-        options: shuffledOpts.map(o => o.text),
+        options: shuffledOpts.map(function(o) { return o.text; }),
         correctIndex: newCorrectIndex,
-        explanation: rawQ.explanation || 'According to NCERT textbooks.',
+        explanation: rawQ.explanation || 'NCERT Textbook Reference.',
         topic: rawQ.subject || 'SST'
       };
     }
 
-    function initTest(pool, title, context, minutes, testKey) {
+    function initTest(pool, title, context, minutes, testKey, shouldShuffle) {
+      if (shouldShuffle === undefined) shouldShuffle = false;
       if (!pool || pool.length === 0) {
-        alert('No questions available in this test yet. Please add questions for this specific test from the Admin Panel.');
+        alert('Abhi is test me questions upload nahi hain.');
         return;
       }
 
       clearTimerEngine();
 
-      const shuffledQuestions = shuffleArray(pool).map(q => prepareQuestionWithShuffledOptions(q));
+      // Retrieve previous attempt's review markers & score (Point 4 & Point 6)
+      const comp = getCompletedTests();
+      const prevData = comp[testKey] || null;
+      const prevMarkedIds = prevData ? (prevData.markedReviewIds || []) : [];
+
+      // If test was already completed, show previous score banner at top
+      const bannerEl = document.getElementById('prevScoreAlertBanner');
+      const bannerText = document.getElementById('prevScoreAlertText');
+      if (prevData && prevData.completed) {
+        bannerText.innerHTML = 'Pichli baar aapne is test me <strong>' + prevData.score + ' / ' + prevData.total + '</strong> marks score kiya tha (' + prevData.accuracy + '% Accuracy).';
+        bannerEl.classList.remove('hidden');
+      } else {
+        bannerEl.classList.add('hidden');
+      }
+
+      // If set or pyq, KEEP exact original array order; else shuffle questions
+      const orderedPool = shouldShuffle ? shuffleArray(pool) : pool.slice();
+      const finalQuestions = orderedPool.map(function(q) { return prepareQuestion(q, shouldShuffle); });
 
       activeTest = {
         testKey: testKey,
         title: title,
         context: context,
-        questions: shuffledQuestions,
+        questions: finalQuestions,
         userAnswers: {},
         markedReview: new Set(),
         currentIndex: 0,
         isPaused: false,
         originalPool: pool,
-        durationMinutes: minutes
+        durationMinutes: minutes,
+        shouldShuffle: shouldShuffle,
+        prevMarkedIds: prevMarkedIds
       };
 
       document.getElementById('testExamName').textContent = title;
@@ -838,7 +1054,7 @@
       
       updateTimerDisplay(timerRemainingSeconds);
 
-      globalTimerInterval = setInterval(() => {
+      globalTimerInterval = setInterval(function() {
         if (!activeTest.isPaused) {
           const now = Date.now();
           const diff = Math.max(0, Math.round((timerTargetEpoch - now) / 1000));
@@ -870,7 +1086,7 @@
       const min = Math.floor(totalSecs / 60);
       const sec = totalSecs % 60;
       document.getElementById('timeDisplay').textContent = 
-        `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+        String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
     }
 
     function renderCurrentQuestion() {
@@ -878,30 +1094,30 @@
       const total = activeTest.questions.length;
       const idx = activeTest.currentIndex;
 
-      document.getElementById('badgeQuestionNumber').textContent = `Question ${idx + 1} / ${total}`;
-      document.getElementById('badgeTopic').textContent = q.topic;
+      const wasReviewedPreviously = activeTest.prevMarkedIds && activeTest.prevMarkedIds.indexOf(q.id) !== -1;
+
+      document.getElementById('badgeQuestionNumber').textContent = 'Question ' + (idx + 1) + ' / ' + total;
+      
+      // Topic badge + Previous Review Purple badge (Point 6)
+      const badgeTopicEl = document.getElementById('badgeTopic');
+      badgeTopicEl.innerHTML = '<span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-medium">' + q.topic + '</span>' +
+        (wasReviewedPreviously ? '<span class="px-2 py-0.5 rounded-full bg-purple-600 text-white font-bold text-[10px] shadow-sm">🔖 Pichli baar Review/Choda gaya tha</span>' : '');
+
+      // Multiline Statement Support (Point 3)
       document.getElementById('questionText').textContent = q.text;
 
       const letters = ['(A)', '(B)', '(C)', '(D)'];
       const selected = activeTest.userAnswers[idx];
 
       const container = document.getElementById('optionsContainer');
-      container.innerHTML = q.options.map((opt, oIdx) => {
+      container.innerHTML = q.options.map(function(opt, oIdx) {
         const isChecked = selected === oIdx;
-        return `
-          <div onclick="selectOption(${oIdx})" class="p-3 rounded-xl border cursor-pointer transition select-none flex items-start gap-2.5 ${
-            isChecked 
-              ? 'border-emerald-600 bg-emerald-50/70 ring-1 ring-emerald-500 font-semibold' 
-              : 'border-slate-200 bg-white hover:bg-slate-50'
-          }">
-            <span class="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center shrink-0 text-[10px] font-bold ${
-              isChecked ? 'bg-emerald-600 border-emerald-600 text-white' : ''
-            }">${isChecked ? '✓' : ''}</span>
-            <div class="text-xs leading-relaxed text-slate-800">
-              <strong class="mr-1">${letters[oIdx]}</strong> ${opt}
-            </div>
-          </div>
-        `;
+        return '<div onclick="selectOption(' + oIdx + ')" class="p-3 rounded-xl border cursor-pointer transition select-none flex items-start gap-2.5 ' +
+          (isChecked ? 'border-emerald-600 bg-emerald-50/70 ring-1 ring-emerald-500 font-semibold' : 'border-slate-200 bg-white hover:bg-slate-50') + '">' +
+          '<span class="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center shrink-0 text-[10px] font-bold ' +
+          (isChecked ? 'bg-emerald-600 border-emerald-600 text-white' : '') + '">' + (isChecked ? '✓' : '') + '</span>' +
+          '<div class="text-xs leading-relaxed text-slate-800 render-multiline">' +
+          '<strong class="mr-1">' + letters[oIdx] + '</strong> ' + opt + '</div></div>';
       }).join('');
 
       const isMarked = activeTest.markedReview.has(idx);
@@ -961,24 +1177,27 @@
       renderPalette();
     }
 
+    // Palette Grid with Purple Color for Previously Reviewed questions (Point 6)
     function renderPalette() {
       const grid = document.getElementById('paletteGrid');
-      grid.innerHTML = activeTest.questions.map((_, i) => {
+      grid.innerHTML = activeTest.questions.map(function(q, i) {
         const isAns = activeTest.userAnswers[i] !== undefined;
         const isMark = activeTest.markedReview.has(i);
         const isCur = i === activeTest.currentIndex;
+        const wasReviewedPreviously = activeTest.prevMarkedIds && activeTest.prevMarkedIds.indexOf(q.id) !== -1;
 
         let bg = 'bg-slate-100 text-slate-700';
+        
+        if (wasReviewedPreviously && !isAns && !isMark) {
+          bg = 'bg-purple-100 text-purple-900 border-2 border-purple-500 font-bold';
+        }
         if (isAns) bg = 'bg-emerald-500 text-white font-bold';
         if (isMark) bg = 'bg-purple-600 text-white font-bold';
 
         const ring = isCur ? 'ring-2 ring-indigo-900 scale-105' : '';
 
-        return `
-          <button onclick="jumpToQuestion(${i})" class="w-full aspect-square rounded-lg text-xs font-semibold flex items-center justify-center ${bg} ${ring}">
-            ${i + 1}
-          </button>
-        `;
+        return '<button onclick="jumpToQuestion(' + i + ')" class="w-full aspect-square rounded-lg text-xs font-semibold flex items-center justify-center ' + bg + ' ' + ring + '">' +
+               (i + 1) + '</button>';
       }).join('');
     }
 
@@ -986,7 +1205,7 @@
       const total = activeTest.questions.length;
       const ans = Object.keys(activeTest.userAnswers).length;
       document.getElementById('submitModalText').innerHTML = 
-        `You have answered <strong>${ans}</strong> out of <strong>${total}</strong> questions.`;
+        'You have answered <strong>' + ans + '</strong> out of <strong>' + total + '</strong> questions.';
       document.getElementById('submitModal').classList.remove('hidden');
     }
 
@@ -998,16 +1217,13 @@
       closeSubmitModal();
       clearTimerEngine();
 
-      if (activeTest.testKey) {
-        markTestCompleted(activeTest.testKey);
-      }
-
       let correct = 0;
       let wrong = 0;
       const total = activeTest.questions.length;
+      const answeredCount = Object.keys(activeTest.userAnswers).length;
 
       const solList = document.getElementById('solutionsList');
-      solList.innerHTML = activeTest.questions.map((q, idx) => {
+      solList.innerHTML = activeTest.questions.map(function(q, idx) {
         const userChoice = activeTest.userAnswers[idx];
         const isRight = userChoice === q.correctIndex;
         const isSkipped = userChoice === undefined;
@@ -1017,40 +1233,55 @@
 
         const letters = ['A', 'B', 'C', 'D'];
 
-        return `
-          <div class="p-3.5 rounded-xl border text-xs ${isRight ? 'border-emerald-300 bg-emerald-50/30' : isSkipped ? 'border-slate-200' : 'border-rose-300 bg-rose-50/30'}">
-            <div class="flex items-center justify-between mb-2 font-bold">
-              <span>Question ${idx + 1}</span>
-              <span>${isRight ? '✓ Correct' : isSkipped ? 'Skipped' : '✕ Incorrect'}</span>
-            </div>
-            <p class="font-semibold text-slate-900 mb-2">${q.text}</p>
-            <div class="mb-2">
-              <span class="text-slate-500">Your Answer: </span>
-              <strong>${isSkipped ? 'Unanswered' : `(${letters[userChoice]}) ${q.options[userChoice]}`}</strong>
-            </div>
-            <div class="mb-2 text-emerald-800">
-              <span>Correct Answer: </span>
-              <strong>(${letters[q.correctIndex]}) ${q.options[q.correctIndex]}</strong>
-            </div>
-            <p class="text-slate-600 bg-white p-2 rounded border border-slate-100">
-              💡 <strong>Explanation:</strong> ${q.explanation}
-            </p>
-          </div>
-        `;
+        return '<div class="p-3.5 rounded-xl border text-xs ' + (isRight ? 'border-emerald-300 bg-emerald-50/30' : isSkipped ? 'border-slate-200' : 'border-rose-300 bg-rose-50/30') + '">' +
+               '<div class="flex items-center justify-between mb-2 font-bold">' +
+               '<span>Question ' + (idx + 1) + '</span>' +
+               '<span>' + (isRight ? '✓ Correct' : isSkipped ? 'Skipped' : '✕ Incorrect') + '</span></div>' +
+               '<p class="font-semibold text-slate-900 mb-2 render-multiline">' + q.text + '</p>' +
+               '<div class="mb-2"><span class="text-slate-500">Your Answer: </span>' +
+               '<strong>' + (isSkipped ? 'Unanswered' : '(' + letters[userChoice] + ') ' + q.options[userChoice]) + '</strong></div>' +
+               '<div class="mb-2 text-emerald-800"><span>Correct Answer: </span>' +
+               '<strong>(' + letters[q.correctIndex] + ') ' + q.options[q.correctIndex] + '</strong></div>' +
+               '<p class="text-slate-600 bg-white p-2 rounded border border-slate-100 render-multiline">' +
+               '💡 <strong>Explanation:</strong> ' + q.explanation + '</p></div>';
       }).join('');
 
       const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+      const pctAttempted = total > 0 ? (answeredCount / total) * 100 : 0;
+
       appState.testsTaken++;
       appState.totalScoreSum += pct;
       if (pct > appState.bestPercentage) appState.bestPercentage = pct;
 
+      if (activeTest.testKey) {
+        markTestCompleted(activeTest.testKey, {
+          score: correct,
+          total: total,
+          accuracy: pct,
+          attemptedCount: answeredCount
+        });
+      }
+
+      // Result View Completion Badge
+      const resultBadge = document.getElementById('resultCompletionBadge');
+      if (pctAttempted >= 100) {
+        resultBadge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800';
+        resultBadge.innerHTML = '<span class="w-3.5 h-3.5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[8px]">✔</span> Done';
+      } else if (pctAttempted >= 75) {
+        resultBadge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800';
+        resultBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span> Few Remaining';
+      } else {
+        resultBadge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800';
+        resultBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span> Pending';
+      }
+
       document.getElementById('resultExamTitle').textContent = activeTest.title;
-      document.getElementById('resultTotalScore').textContent = `${correct} / ${total}`;
-      document.getElementById('resultPercentage').textContent = `${pct}% Accuracy`;
+      document.getElementById('resultTotalScore').textContent = correct + ' / ' + total;
+      document.getElementById('resultPercentage').textContent = pct + '% Accuracy';
       document.getElementById('resultCorrect').textContent = correct;
       document.getElementById('resultIncorrect').textContent = wrong;
       document.getElementById('resultSkipped').textContent = total - (correct + wrong);
-      document.getElementById('resultFeedback').textContent = pct >= 60 ? 'Great performance! Your preparation is on track.' : 'Keep practicing! Review the explanations carefully.';
+      document.getElementById('resultFeedback').textContent = pct >= 60 ? 'Shaandaar pradarshan! Aapki CTET taiyari sahi disha me hai.' : 'Abhyas jaari rakhein! Har prashn ki vyakhya dhyaan se padhein.';
 
       renderDashboard();
       navTo('viewResult');
@@ -1061,33 +1292,38 @@
     }
 
     function restartCurrentTestWithShuffle() {
-      initTest(activeTest.originalPool, activeTest.title, activeTest.context, activeTest.durationMinutes, activeTest.testKey);
+      initTest(activeTest.originalPool, activeTest.title, activeTest.context, activeTest.durationMinutes, activeTest.testKey, activeTest.shouldShuffle);
     }
 
-    // --- ACCURATE POOL FILTER LAUNCHERS ---
+    // Full Mock Set (Point 1 & Point 2: Isolated, Keeps exact upload sequence)
     function startMockSet(setNum) {
-      const pool = QUESTION_BANK.filter(q => Number(q.mockSet) === Number(setNum));
-      initTest(pool, `Full Mock Test - Set ${setNum}`, 'CTET Paper 2 Simulation', 25, `mockset_${setNum}`);
+      const pool = QUESTION_BANK.filter(function(q) { return Number(q.mockSet) === Number(setNum); });
+      initTest(pool, 'Full Mock Test - Set ' + setNum, 'CTET Paper 2 Simulation', 25, 'mockset_' + setNum, false);
     }
 
+    // PYQ Exam (Point 1 & Point 2: Isolated, Keeps exact upload sequence)
     function startPyqExam(year) {
-      const pool = QUESTION_BANK.filter(q => String(q.year) === String(year));
-      initTest(pool, `CTET SST PYQ ${year}`, 'Previous Year Paper', 25, `pyq_${year}`);
+      const pool = QUESTION_BANK.filter(function(q) { return String(q.year) === String(year); });
+      initTest(pool, 'CTET SST PYQ ' + year, 'Previous Year Paper', 25, 'pyq_' + year, false);
     }
 
+    // Chapter Practice (Point 1: Isolated, Only chapter questions)
     function startChapterTest(chapterId, chapterName) {
-      const pool = QUESTION_BANK.filter(q => q.chapterId === chapterId);
-      initTest(pool, chapterName, 'Chapter-wise Practice', 15, `chapter_${chapterId}`);
+      const pool = QUESTION_BANK.filter(function(q) {
+        return q.chapterId === chapterId && q.targetType !== 'set' && q.targetType !== 'pyq';
+      });
+      initTest(pool, chapterName, 'Chapter-wise Practice', 15, 'chapter_' + chapterId, true);
     }
 
     function startClassRevisionQuest() {
-      const pool = QUESTION_BANK.filter(q => q.subject === currentSubjectKey && Number(q.class) === Number(currentClassNum));
-      initTest(pool, `All Chapter Revision Quest (Class ${currentClassNum})`, 'Class Revision Mega Test', 25, `quest_${currentSubjectKey}_${currentClassNum}`);
+      const pool = QUESTION_BANK.filter(function(q) {
+        return q.subject === currentSubjectKey && Number(q.class) === Number(currentClassNum) && q.targetType !== 'set' && q.targetType !== 'pyq';
+      });
+      initTest(pool, 'All Chapter Revision Quest (Class ' + currentClassNum + ')', 'Class Revision Mega Test', 25, 'quest_' + currentSubjectKey + '_' + currentClassNum, true);
     }
 
     window.onload = function() {
       renderDashboard();
-      initFirebaseSync();
     };
   </script>
 </body>
