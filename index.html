@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>CTET SST Exam & Study Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,13 +14,18 @@
     .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     .render-multiline { white-space: pre-line; word-break: break-word; }
+    
+    /* Mobile Status Bar / Notch safe padding */
+    .mobile-header-spacing {
+      padding-top: max(2rem, env(safe-area-inset-top));
+    }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased">
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased select-none">
 
-  <!-- Header -->
-  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-30">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+  <!-- Header with Mobile Status-Bar Notch Spacing -->
+  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-30 mobile-header-spacing pb-3.5">
+    <div class="max-w-5xl mx-auto px-4 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 cursor-pointer" onclick="navTo('viewDashboard')">
         <span class="p-2 bg-white/10 rounded-xl text-lg">🏛</span>
         <div>
@@ -30,8 +35,11 @@
       </div>
       
       <div class="flex items-center gap-2">
-        <button onclick="openProfileModal()" class="px-3.5 py-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 border border-white/20 rounded-xl transition flex items-center gap-2 shadow-sm">
-          <span class="w-6 h-6 rounded-full bg-amber-400 text-indigo-950 flex items-center justify-center font-bold text-[11px]" id="headerAvatar">👤</span>
+        <button onclick="openProfileModal()" class="px-3 py-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 border border-white/20 rounded-xl transition flex items-center gap-2 shadow-sm">
+          <div class="w-6 h-6 rounded-full overflow-hidden bg-amber-400 text-indigo-950 flex items-center justify-center font-bold text-[11px] shrink-0">
+            <img id="headerAvatarImg" src="" alt="" class="w-full h-full object-cover hidden">
+            <span id="headerAvatarFallback">👤</span>
+          </div>
           <span id="headerStudentName" class="max-w-[110px] sm:max-w-[140px] truncate">Student Profile</span>
         </button>
       </div>
@@ -63,18 +71,14 @@
 
     <!-- 1. DASHBOARD VIEW -->
     <section id="viewDashboard" class="space-y-5">
-      <div class="bg-gradient-to-r from-indigo-800 to-slate-900 rounded-2xl p-4 sm:p-5 text-white flex flex-wrap items-center justify-between gap-3 shadow">
+      <div class="bg-gradient-to-r from-indigo-800 to-slate-900 rounded-2xl p-5 text-white flex flex-wrap items-center justify-between gap-4 shadow">
         <div>
           <span class="text-[11px] bg-white/20 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider text-indigo-200">NCERT Exam Suite</span>
-          <h2 class="text-base sm:text-lg font-bold mt-1" id="dashGreeting">Namaste, Student!</h2>
-          <p class="text-xs text-slate-300">Pehle PDF Notes padhein, fir mock test dekar apna score check karein.</p>
+          <h2 class="text-lg sm:text-xl font-extrabold mt-1.5" id="dashGreeting">Good Day, Student!</h2>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="openNotesHub()" class="px-3.5 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
-            <span>📖</span> <span>Study PDF Notes</span>
-          </button>
-          <button onclick="openProfileModal()" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold border border-white/20 transition">
-            ⚙️ My Profile
+        <div>
+          <button onclick="openNotesSubjectsHub()" class="px-5 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-sm font-extrabold transition shadow-lg flex items-center gap-2 transform active:scale-95">
+            <span class="text-base">📖</span> <span>Study PDF Notes</span>
           </button>
         </div>
       </div>
@@ -84,10 +88,10 @@
           <div>
             <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 mb-2">Practice Sets</span>
             <h3 class="text-lg font-bold">Full SST Mock Test (Set 1 to 10)</h3>
-            <p class="text-xs text-indigo-100 mt-1 opacity-90">CTET Paper 2 Pattern: 60 Questions, 25 Minutes. Original Sequence Preserved.</p>
+            <p class="text-xs text-indigo-100 mt-1 opacity-90">CTET Paper 2 Pattern. Exact Question Sequence Preserved.</p>
           </div>
           <div class="mt-4 pt-3 border-t border-white/20 flex items-center justify-between text-xs font-semibold">
-            <span>10 Mock Sets Available</span>
+            <span>10 Mock Sets</span>
             <span class="bg-white text-indigo-900 px-3 py-1.5 rounded-lg">Open Sets →</span>
           </div>
         </div>
@@ -111,7 +115,7 @@
             <h2 class="text-base font-bold text-slate-800">Subject & Class Explorer</h2>
             <p class="text-xs text-slate-500">Subject chunein aur specific class ke chapter practice tests karein</p>
           </div>
-          <button onclick="openNotesHub()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+          <button onclick="openNotesSubjectsHub()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
             <span>📖 Read All PDF Notes</span> <span>→</span>
           </button>
         </div>
@@ -124,7 +128,7 @@
       <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
         <div>
           <h2 class="text-base font-bold text-slate-800">Full SST Mock Tests (Set 1 to Set 10)</h2>
-          <p class="text-xs text-slate-500">Independent Sets • Questions appear in exact original upload order</p>
+          <p class="text-xs text-slate-500">Independent Sets • Preserved Upload Numbering</p>
         </div>
       </div>
       <div id="setsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
@@ -141,7 +145,7 @@
       <div id="pyqContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
     </section>
 
-    <!-- 4. CLASSES VIEW -->
+    <!-- 4. PRACTICE CLASSES VIEW -->
     <section id="viewClasses" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
         <div>
@@ -152,7 +156,7 @@
       <div id="classesListContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
     </section>
 
-    <!-- 5. CHAPTERS VIEW -->
+    <!-- 5. PRACTICE CHAPTERS VIEW -->
     <section id="viewChapters" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
         <div>
@@ -166,7 +170,7 @@
       <div id="revisionQuestCard" class="mt-5 p-5 bg-gradient-to-r from-amber-600 to-orange-700 rounded-2xl text-white shadow flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20">Mega Revision (25 Mins)</span>
+            <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20">Mega Revision</span>
             <span id="questStatusBadge"></span>
           </div>
           <h3 class="text-base font-bold" id="revisionQuestTitle">All Chapter Revision Quest</h3>
@@ -178,21 +182,37 @@
       </div>
     </section>
 
-    <!-- NOTES HUB VIEW -->
-    <section id="viewNotesHub" class="hidden space-y-4">
+    <!-- NOTES STEP 1: SUBJECTS VIEW (Like Dashboard) -->
+    <section id="viewNotesSubjects" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
         <div>
           <h2 class="text-base font-bold text-slate-800">📖 NCERT Social Science PDF Notes</h2>
-          <p class="text-xs text-slate-500">Read notes with diagrams & pictures before taking mock tests</p>
+          <p class="text-xs text-slate-500">Pehle subject select karein uske baad class wise study notes khulenge</p>
         </div>
       </div>
+      <div id="notesSubjectGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </section>
 
-      <div class="bg-white p-3 rounded-2xl border border-slate-200 flex flex-wrap gap-2 items-center justify-between">
-        <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll py-1" id="notesSubjectFilters"></div>
-        <div class="flex items-center gap-1" id="notesClassFilters"></div>
+    <!-- NOTES STEP 2: CLASSES VIEW FOR SELECTED SUBJECT -->
+    <section id="viewNotesClasses" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 id="notesClassesSubjectTitle" class="text-base font-bold text-slate-800">Select Class</h2>
+          <p class="text-xs text-slate-500">Apni class choose karein jiske notes padhna chahte hain</p>
+        </div>
       </div>
+      <div id="notesClassesGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </section>
 
-      <div id="notesContainer" class="space-y-3"></div>
+    <!-- NOTES STEP 3: CHAPTER NOTES LIST FOR SELECTED CLASS -->
+    <section id="viewNotesList" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 id="notesListTitle" class="text-base font-bold text-slate-800">Chapter PDF Notes</h2>
+          <p class="text-xs text-slate-500">Lesson 1, 2, 3 ke sequential high-quality notes</p>
+        </div>
+      </div>
+      <div id="notesChaptersContainer" class="space-y-3"></div>
     </section>
 
     <!-- IN-APP PDF VIEWER VIEW -->
@@ -223,7 +243,6 @@
 
     <!-- 6. ACTIVE TEST VIEW -->
     <section id="viewTest" class="hidden space-y-4">
-      <!-- Previous Attempt Banner -->
       <div id="prevScoreAlertBanner" class="hidden p-3 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-900 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-2">
           <span class="text-base">📊</span>
@@ -251,14 +270,13 @@
         </div>
       </div>
 
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between min-h-[420px]">
+      <div id="questionCardBox" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between min-h-[420px] transition duration-200">
         <div>
           <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 text-xs">
             <span id="badgeQuestionNumber" class="px-2.5 py-1 bg-slate-900 text-white rounded-lg font-bold">Question 1/1</span>
             <div id="badgeTopic" class="flex items-center gap-1.5"></div>
           </div>
 
-          <!-- Multiline Statement Support for CTET Format -->
           <div id="questionText" class="text-sm sm:text-base font-semibold text-slate-800 leading-relaxed mb-6 select-none render-multiline">
             Loading question...
           </div>
@@ -292,7 +310,7 @@
           <div class="flex items-center gap-3 flex-wrap">
             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span> Answered</span>
             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-purple-600 inline-block"></span> Review</span>
-            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-purple-200 border border-purple-500 inline-block"></span> Pichli Baar Review Kiya</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-purple-200 border border-purple-500 inline-block"></span> Marked Previously</span>
             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-slate-200 inline-block"></span> Pending</span>
           </div>
         </div>
@@ -355,20 +373,34 @@
 
   </main>
 
-  <!-- STUDENT PROFILE MODAL -->
+  <!-- CLEAN STUDENT PROFILE MODAL -->
   <div id="profileModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-100">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
         <div class="flex items-center gap-2">
           <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">👤</span>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900">Student Profile</h3>
-          </div>
+          <h3 class="text-sm font-bold text-slate-900">Student Profile</h3>
         </div>
         <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
       </div>
 
       <div class="space-y-3.5">
+        <div class="flex flex-col items-center justify-center gap-2 py-1">
+          <div class="relative w-20 h-20 rounded-full overflow-hidden border-2 border-indigo-600 bg-slate-100 flex items-center justify-center shadow">
+            <img id="profilePreviewImg" src="" alt="Profile" class="w-full h-full object-cover hidden">
+            <span id="profilePreviewPlaceholder" class="text-3xl text-slate-400">👤</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="px-3 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-xs font-bold cursor-pointer transition">
+              <span>📷 Change Photo</span>
+              <input type="file" id="filePhotoInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+            </label>
+            <button type="button" id="btnRemovePhoto" onclick="removePhoto()" class="hidden px-2.5 py-1 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-lg border border-rose-200">
+              Remove
+            </button>
+          </div>
+        </div>
+
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Student Full Name *</label>
           <input type="text" id="inputStudentName" placeholder="Jaise: Tushar Kumar" class="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
@@ -377,11 +409,9 @@
           <label class="block text-xs font-semibold text-slate-700 mb-1">Email ID *</label>
           <input type="email" id="inputStudentEmail" placeholder="student@example.com" class="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
         </div>
-
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-1">
-          <div class="flex justify-between font-medium"><span>Completed Tests:</span> <strong id="profileCompletedCount">0</strong></div>
-          <div class="flex justify-between font-medium"><span>Average Accuracy:</span> <strong id="profileAvgAcc">0%</strong></div>
-          <div class="flex justify-between font-medium"><span>Best Percentage:</span> <strong id="profileBestScore">0%</strong></div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Mobile Number *</label>
+          <input type="tel" id="inputStudentMobile" placeholder="9876543210" class="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
         </div>
 
         <div class="flex items-center gap-2 pt-2">
@@ -410,11 +440,14 @@
   </div>
 
   <script>
+    const FIREBASE_BASE_URL = 'https://ctet-sst-portal-default-rtdb.firebaseio.com';
+    let uploadedBase64Photo = '';
+
     function getStudentProfile() {
       try {
-        return JSON.parse(localStorage.getItem('ctet_student_profile') || '{"name":"","email":""}');
+        return JSON.parse(localStorage.getItem('ctet_student_profile') || '{"name":"","email":"","mobile":"","photo":""}');
       } catch (e) {
-        return { name: '', email: '' };
+        return { name: '', email: '', mobile: '', photo: '' };
       }
     }
 
@@ -447,7 +480,6 @@
       } catch (e) {}
     }
 
-    // Status Badge Logic (Point 5)
     function renderCustomStatusBadge(testKey, totalQCount) {
       if (!totalQCount || totalQCount <= 0) return '';
       const data = getCompletedTests();
@@ -473,8 +505,8 @@
       }
     }
 
-    // Previous score display (Point 4)
-    function renderPreviousScoreSnippet(testKey) {
+    function renderPreviousScoreSnippet(testKey, qCount) {
+      if (!qCount || qCount <= 0) return '';
       const data = getCompletedTests();
       const record = data[testKey];
       if (!record) return '';
@@ -491,24 +523,7 @@
         classes: {
           6: [
             { id: 'h6_1', name: 'Chapter 1: What, Where, How and When?' },
-            { id: 'h6_2', name: 'Chapter 2: From Hunting-Gathering to Growing Food' },
-            { id: 'h6_3', name: 'Chapter 3: In the Earliest Cities' },
-            { id: 'h6_4', name: 'Chapter 4: What Books and Burials Tell Us' },
-            { id: 'h6_5', name: 'Chapter 5: Kingdoms, Kings and an Early Republic' },
-            { id: 'h6_6', name: 'Chapter 6: New Questions and Ideas' }
-          ],
-          7: [
-            { id: 'h7_1', name: 'Chapter 1: Tracing Changes Through a Thousand Years' },
-            { id: 'h7_2', name: 'Chapter 2: New Kings and Kingdoms' },
-            { id: 'h7_3', name: 'Chapter 3: The Delhi Sultans' },
-            { id: 'h7_4', name: 'Chapter 4: The Mughal Empire' }
-          ],
-          8: [
-            { id: 'h8_1', name: 'Chapter 1: How, When and Where' },
-            { id: 'h8_2', name: 'Chapter 2: From Trade to Territory' },
-            { id: 'h8_3', name: 'Chapter 3: Ruling the Countryside' },
-            { id: 'h8_4', name: 'Chapter 4: Tribals, Dikus and the Vision of a Golden Age' },
-            { id: 'h8_5', name: 'Chapter 5: When People Rebel (1857 and After)' }
+            { id: 'h6_2', name: 'Chapter 2: From Hunting-Gathering to Growing Food' }
           ]
         }
       },
@@ -517,27 +532,7 @@
         icon: '🌍',
         isActive: true,
         classes: {
-          6: [
-            { id: 'g6_1', name: 'Chapter 1: The Earth in the Solar System' },
-            { id: 'g6_2', name: 'Chapter 2: Globe: Latitudes and Longitudes' },
-            { id: 'g6_3', name: 'Chapter 3: Motions of the Earth' },
-            { id: 'g6_4', name: 'Chapter 4: Maps' },
-            { id: 'g6_5', name: 'Chapter 5: Major Domains of the Earth' }
-          ],
-          7: [
-            { id: 'g7_1', name: 'Chapter 1: Environment' },
-            { id: 'g7_2', name: 'Chapter 2: Inside Our Earth' },
-            { id: 'g7_3', name: 'Chapter 3: Our Changing Earth' },
-            { id: 'g7_4', name: 'Chapter 4: Air' },
-            { id: 'g7_5', name: 'Chapter 5: Water' }
-          ],
-          8: [
-            { id: 'g8_1', name: 'Chapter 1: Resources' },
-            { id: 'g8_2', name: 'Chapter 2: Land, Soil, Water, Natural Vegetation & Wildlife' },
-            { id: 'g8_3', name: 'Chapter 3: Agriculture' },
-            { id: 'g8_4', name: 'Chapter 4: Industries' },
-            { id: 'g8_5', name: 'Chapter 5: Human Resources' }
-          ]
+          6: [{ id: 'g6_1', name: 'Chapter 1: The Earth in the Solar System' }]
         }
       },
       Civics: {
@@ -545,33 +540,15 @@
         icon: '🏛️',
         isActive: true,
         classes: {
-          6: [
-            { id: 'c6_1', name: 'Chapter 1: Understanding Diversity' },
-            { id: 'c6_2', name: 'Chapter 2: Diversity and Discrimination' },
-            { id: 'c6_3', name: 'Chapter 3: What is Government?' },
-            { id: 'c6_4', name: 'Chapter 4: Panchayati Raj' },
-            { id: 'c6_5', name: 'Chapter 5: Rural Administration' }
-          ],
-          7: [
-            { id: 'c7_1', name: 'Chapter 1: On Equality' },
-            { id: 'c7_2', name: 'Chapter 2: Role of the Government in Health' },
-            { id: 'c7_3', name: 'Chapter 3: How the State Government Works' },
-            { id: 'c7_4', name: 'Chapter 4: Growing up as Boys and Girls' }
-          ],
-          8: [
-            { id: 'c8_1', name: 'Chapter 1: The Indian Constitution' },
-            { id: 'c8_2', name: 'Chapter 2: Understanding Secularism' },
-            { id: 'c8_3', name: 'Chapter 3: Why Do We Need a Parliament?' },
-            { id: 'c8_4', name: 'Chapter 4: Judiciary' },
-            { id: 'c8_5', name: 'Chapter 5: Understanding Marginalisation' }
-          ]
+          6: [{ id: 'c6_1', name: 'Chapter 1: Understanding Diversity' }]
         }
       }
     };
 
     let APP_DATA = JSON.parse(localStorage.getItem('ctet_admin_app_data') || JSON.stringify(DEFAULT_APP_DATA));
-    let NOTES_BANK = [];
+    let NOTES_BANK = JSON.parse(localStorage.getItem('ctet_admin_notes') || '[]');
     let QUESTION_BANK = JSON.parse(localStorage.getItem('ctet_admin_questions') || '[]');
+    let testTimersMap = JSON.parse(localStorage.getItem('ctet_admin_timers') || '{}');
 
     function extractChapterNum(name) {
       if (!name) return 9999;
@@ -582,12 +559,19 @@
     let appState = { testsTaken: 0, totalScoreSum: 0, bestPercentage: 0 };
     let navStack = ['viewDashboard'];
     let currentSubjectKey = 'History';
-    let currentClassNum = 6;
+    let currentClassNum = '6';
 
-    // Mobile Navigation & History Stack (Point 8)
+    // Notes selection state
+    let selectedNoteSubjectKey = '';
+    let selectedNoteClassKey = '';
+
     function navTo(viewId, pushHistory) {
       if (pushHistory === undefined) pushHistory = true;
-      const views = ['viewDashboard', 'viewSets', 'viewPyq', 'viewClasses', 'viewChapters', 'viewTest', 'viewResult', 'viewNotesHub', 'viewNoteDetail'];
+      const views = [
+        'viewDashboard', 'viewSets', 'viewPyq', 'viewClasses', 'viewChapters', 
+        'viewNotesSubjects', 'viewNotesClasses', 'viewNotesList', 
+        'viewTest', 'viewResult', 'viewNoteDetail'
+      ];
       views.forEach(function(v) {
         const el = document.getElementById(v);
         if (el) el.classList.toggle('hidden', v !== viewId);
@@ -596,11 +580,15 @@
       const stats = document.getElementById('statsRow');
       if (stats) stats.classList.toggle('hidden', viewId !== 'viewDashboard');
 
-      if (pushHistory) {
-        if (navStack[navStack.length - 1] !== viewId) {
-          navStack.push(viewId);
-          window.history.pushState({ viewId: viewId, currentSubjectKey: currentSubjectKey, currentClassNum: currentClassNum }, '');
-        }
+      if (pushHistory && navStack[navStack.length - 1] !== viewId) {
+        navStack.push(viewId);
+        window.history.pushState({ 
+          viewId: viewId, 
+          currentSubjectKey: currentSubjectKey, 
+          currentClassNum: currentClassNum,
+          selectedNoteSubjectKey: selectedNoteSubjectKey,
+          selectedNoteClassKey: selectedNoteClassKey
+        }, '');
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -614,22 +602,112 @@
         else if (prev === 'viewPyq') openPyqView(false);
         else if (prev === 'viewChapters') openChaptersView(currentClassNum, false);
         else if (prev === 'viewClasses') openClassesView(currentSubjectKey, false);
-        else if (prev === 'viewNotesHub') openNotesHub(false);
+        else if (prev === 'viewNotesSubjects') openNotesSubjectsHub(false);
+        else if (prev === 'viewNotesClasses') openNotesClassesView(selectedNoteSubjectKey, false);
+        else if (prev === 'viewNotesList') openNotesChaptersView(selectedNoteClassKey, false);
         else navTo(prev, false);
       } else {
         navTo('viewDashboard', false);
       }
     };
 
+    async function syncStudentDataFromFirebase() {
+      try {
+        const appRes = await fetch(FIREBASE_BASE_URL + '/app_data.json');
+        const appD = await appRes.json();
+        if (appD && Object.keys(appD).length > 0) {
+          APP_DATA = appD;
+          localStorage.setItem('ctet_admin_app_data', JSON.stringify(APP_DATA));
+        }
+
+        const qRes = await fetch(FIREBASE_BASE_URL + '/questions.json');
+        const qData = await qRes.json();
+        if (qData) {
+          QUESTION_BANK = Array.isArray(qData) ? qData : Object.values(qData);
+          localStorage.setItem('ctet_admin_questions', JSON.stringify(QUESTION_BANK));
+        }
+
+        const nRes = await fetch(FIREBASE_BASE_URL + '/notes.json');
+        const nData = await nRes.json();
+        if (nData) {
+          NOTES_BANK = Array.isArray(nData) ? nData : Object.values(nData);
+          localStorage.setItem('ctet_admin_notes', JSON.stringify(NOTES_BANK));
+        }
+
+        const tRes = await fetch(FIREBASE_BASE_URL + '/timers.json');
+        const tData = await tRes.json();
+        if (tData) {
+          testTimersMap = tData;
+          localStorage.setItem('ctet_admin_timers', JSON.stringify(testTimersMap));
+        }
+
+        renderDashboard();
+      } catch (err) {
+        console.warn('Firebase Sync offline, working with cached data:', err);
+      }
+    }
+
+    function handlePhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxDim = 300;
+          let width = img.width;
+          let height = img.height;
+
+          const minDim = Math.min(width, height);
+          const startX = (width - minDim) / 2;
+          const startY = (height - minDim) / 2;
+
+          canvas.width = maxDim;
+          canvas.height = maxDim;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, maxDim, maxDim);
+
+          uploadedBase64Photo = canvas.toDataURL('image/jpeg', 0.85);
+          displayPreviewPhoto(uploadedBase64Photo);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function displayPreviewPhoto(dataUrl) {
+      const imgEl = document.getElementById('profilePreviewImg');
+      const fallbackEl = document.getElementById('profilePreviewPlaceholder');
+      const btnRemove = document.getElementById('btnRemovePhoto');
+
+      if (dataUrl) {
+        imgEl.src = dataUrl;
+        imgEl.classList.remove('hidden');
+        fallbackEl.classList.add('hidden');
+        btnRemove.classList.remove('hidden');
+      } else {
+        imgEl.classList.add('hidden');
+        fallbackEl.classList.remove('hidden');
+        btnRemove.classList.add('hidden');
+      }
+    }
+
+    function removePhoto() {
+      uploadedBase64Photo = '';
+      displayPreviewPhoto('');
+      document.getElementById('filePhotoInput').value = '';
+    }
+
     function openProfileModal() {
       const profile = getStudentProfile();
       document.getElementById('inputStudentName').value = profile.name || '';
       document.getElementById('inputStudentEmail').value = profile.email || '';
+      document.getElementById('inputStudentMobile').value = profile.mobile || '';
       
-      const comp = getCompletedTests();
-      document.getElementById('profileCompletedCount').textContent = Object.keys(comp).length;
-      document.getElementById('profileAvgAcc').textContent = appState.testsTaken > 0 ? Math.round(appState.totalScoreSum / appState.testsTaken) + '%' : '0%';
-      document.getElementById('profileBestScore').textContent = appState.bestPercentage + '%';
+      uploadedBase64Photo = profile.photo || '';
+      displayPreviewPhoto(uploadedBase64Photo);
 
       document.getElementById('profileModal').classList.remove('hidden');
     }
@@ -641,13 +719,20 @@
     function saveStudentProfile() {
       const name = document.getElementById('inputStudentName').value.trim();
       const email = document.getElementById('inputStudentEmail').value.trim();
+      const mobile = document.getElementById('inputStudentMobile').value.trim();
 
       if (!name) {
         alert('Kripya apna naam daalein!');
         return;
       }
 
-      const profile = { name: name, email: email, updatedAt: new Date().toISOString() };
+      const profile = { 
+        name: name, 
+        email: email, 
+        mobile: mobile,
+        photo: uploadedBase64Photo,
+        updatedAt: new Date().toISOString() 
+      };
       localStorage.setItem('ctet_student_profile', JSON.stringify(profile));
 
       updateHeaderProfileUI();
@@ -655,20 +740,39 @@
       alert('Profile save ho gayi hai!');
     }
 
+    function getTimeBasedGreeting(name) {
+      const hour = new Date().getHours();
+      let greeting = 'Namaste';
+      if (hour >= 4 && hour < 12) greeting = 'Good Morning';
+      else if (hour >= 12 && hour < 17) greeting = 'Good Afternoon';
+      else greeting = 'Good Evening';
+
+      return name ? greeting + ', ' + name + '!' : greeting + ', Student!';
+    }
+
     function updateHeaderProfileUI() {
       const profile = getStudentProfile();
       const nameEl = document.getElementById('headerStudentName');
-      const avatarEl = document.getElementById('headerAvatar');
+      const avatarImgEl = document.getElementById('headerAvatarImg');
+      const avatarFallback = document.getElementById('headerAvatarFallback');
       const greetEl = document.getElementById('dashGreeting');
 
       if (profile.name) {
         nameEl.textContent = profile.name;
-        avatarEl.textContent = profile.name.charAt(0).toUpperCase();
-        if (greetEl) greetEl.textContent = 'Namaste, ' + profile.name + '!';
+        if (greetEl) greetEl.textContent = getTimeBasedGreeting(profile.name);
       } else {
         nameEl.textContent = 'Set Profile';
-        avatarEl.textContent = '👤';
-        if (greetEl) greetEl.textContent = 'Namaste, Student!';
+        if (greetEl) greetEl.textContent = getTimeBasedGreeting('');
+      }
+
+      if (profile.photo) {
+        avatarImgEl.src = profile.photo;
+        avatarImgEl.classList.remove('hidden');
+        avatarFallback.classList.add('hidden');
+      } else {
+        avatarImgEl.classList.add('hidden');
+        avatarFallback.classList.remove('hidden');
+        avatarFallback.textContent = profile.name ? profile.name.charAt(0).toUpperCase() : '👤';
       }
     }
 
@@ -684,11 +788,14 @@
       grid.innerHTML = activeSubjects.map(function(entry) {
         const key = entry[0];
         const data = entry[1];
-        // Strict isolation: Only count chapter practice questions
         const qCount = QUESTION_BANK.filter(function(q) {
           return q.subject === key && q.targetType !== 'set' && q.targetType !== 'pyq';
         }).length;
-        const classesPresent = Object.keys(data.classes || {}).sort(function(a,b) { return Number(a) - Number(b); });
+        const classesPresent = Object.keys(data.classes || {}).sort(function(a,b) { 
+          const numA = parseInt(a), numB = parseInt(b);
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+          return a.localeCompare(b);
+        });
         const classSubtitle = classesPresent.length > 0 
           ? 'Classes: ' + classesPresent.join(', ') + ' • Chapters' 
           : 'Chapters & Practice';
@@ -714,82 +821,125 @@
       return rawUrl;
     }
 
-    let selectedNotesSubject = 'All';
-    let selectedNotesClass = 'All';
+    /* ==============================================================
+       NEW NOTES FLOW (LIKE DASHBOARD: SUBJECTS -> CLASSES -> CHAPTERS)
+       ============================================================== */
 
-    function openNotesHub(push) {
+    // 1. NOTES STEP 1: SUBJECTS HUB
+    function openNotesSubjectsHub(push) {
       if (push === undefined) push = true;
-      renderNotesFilters();
-      renderNotesList();
-      navTo('viewNotesHub', push);
-    }
+      const grid = document.getElementById('notesSubjectGrid');
+      const activeSubjects = Object.entries(APP_DATA).filter(function(entry) { return entry[1].isActive !== false; });
 
-    function renderNotesFilters() {
-      const subContainer = document.getElementById('notesSubjectFilters');
-      const subjects = ['All'].concat(Object.keys(APP_DATA));
-      subContainer.innerHTML = subjects.map(function(s) {
-        return '<button onclick="filterNotesBySubject(\'' + s + '\')" class="px-3 py-1 rounded-lg text-xs font-bold shrink-0 transition ' +
-               (selectedNotesSubject === s ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200') + '">' + s + '</button>';
+      grid.innerHTML = activeSubjects.map(function(entry) {
+        const key = entry[0];
+        const data = entry[1];
+        const notesCount = NOTES_BANK.filter(function(n) { return n.subject === key; }).length;
+        const classesPresent = Object.keys(data.classes || {}).sort(function(a,b) { 
+          const numA = parseInt(a), numB = parseInt(b);
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+          return a.localeCompare(b);
+        });
+        const classSubtitle = classesPresent.length > 0 
+          ? 'Classes: ' + classesPresent.join(', ')
+          : 'All Classes';
+
+        return '<div onclick="openNotesClassesView(\'' + key + '\')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-indigo-500 hover:shadow-md cursor-pointer transition flex flex-col justify-between group">' +
+               '<div><div class="text-3xl mb-2 group-hover:scale-110 transition">' + (data.icon || '📚') + '</div>' +
+               '<h4 class="font-bold text-slate-800 text-sm">' + data.title + '</h4>' +
+               '<p class="text-xs text-slate-500 mt-1">' + classSubtitle + '</p></div>' +
+               '<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">' +
+               '<span class="text-indigo-600 font-bold">' + notesCount + ' PDF Notes</span>' +
+               '<span class="text-slate-500 font-semibold">Select Class →</span></div></div>';
       }).join('');
 
-      const classContainer = document.getElementById('notesClassFilters');
-      const classes = ['All', '6', '7', '8'];
-      classContainer.innerHTML = classes.map(function(c) {
-        return '<button onclick="filterNotesByClass(\'' + c + '\')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ' +
-               (selectedNotesClass === c ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + '">' +
-               (c === 'All' ? 'All Classes' : 'Class ' + c) + '</button>';
-      }).join('');
+      navTo('viewNotesSubjects', push);
     }
 
-    function filterNotesBySubject(sub) {
-      selectedNotesSubject = sub;
-      renderNotesFilters();
-      renderNotesList();
-    }
+    // 2. NOTES STEP 2: CLASSES VIEW FOR SELECTED SUBJECT
+    function openNotesClassesView(subjectKey, push) {
+      if (push === undefined) push = true;
+      selectedNoteSubjectKey = subjectKey;
+      const subj = APP_DATA[subjectKey] || { title: subjectKey, icon: '📚', classes: {} };
+      document.getElementById('notesClassesSubjectTitle').textContent = (subj.icon || '📚') + ' ' + subj.title + ' • Select Class';
 
-    function filterNotesByClass(cls) {
-      selectedNotesClass = cls;
-      renderNotesFilters();
-      renderNotesList();
-    }
-
-    function renderNotesList() {
-      const container = document.getElementById('notesContainer');
-      const adminNotes = JSON.parse(localStorage.getItem('ctet_admin_notes') || '[]');
-      const allNotes = adminNotes.concat(NOTES_BANK);
-
-      const filtered = allNotes.filter(function(n) {
-        const matchSub = selectedNotesSubject === 'All' || n.subject === selectedNotesSubject;
-        const matchCls = selectedNotesClass === 'All' || String(n.class) === String(selectedNotesClass);
-        return matchSub && matchCls;
+      const grid = document.getElementById('notesClassesGrid');
+      
+      // Collect all classes from both syllabus and notes
+      let classKeysSet = new Set(Object.keys(subj.classes || {}));
+      NOTES_BANK.filter(function(n) { return n.subject === subjectKey; }).forEach(function(n) {
+        if (n.class) classKeysSet.add(String(n.class));
       });
 
-      if (filtered.length === 0) {
+      const classKeys = Array.from(classKeysSet).sort(function(a,b) { 
+        const numA = parseInt(a), numB = parseInt(b);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return a.localeCompare(b);
+      });
+
+      const classesToDisplay = classKeys.length > 0 ? classKeys : ['6', '7', '8'];
+
+      grid.innerHTML = classesToDisplay.map(function(cls) {
+        const notesCount = NOTES_BANK.filter(function(n) { 
+          return n.subject === subjectKey && String(n.class) === String(cls); 
+        }).length;
+        const displayLabel = isNaN(cls) ? cls : 'Class ' + cls;
+
+        return '<div onclick="openNotesChaptersView(\'' + cls + '\')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-indigo-500 hover:shadow-md cursor-pointer transition flex flex-col justify-between group">' +
+               '<div><span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">' + displayLabel + '</span>' +
+               '<h3 class="text-base font-bold text-slate-800 mt-2">' + displayLabel + ': ' + subj.title.split(' ')[0] + '</h3>' +
+               '<p class="text-xs text-slate-500 mt-1">High-Quality Chapter PDF Study Notes</p></div>' +
+               '<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">' +
+               '<span class="font-bold text-indigo-600">' + notesCount + ' Notes Available</span>' +
+               '<span class="text-indigo-600 font-bold">Open Notes →</span></div></div>';
+      }).join('');
+
+      navTo('viewNotesClasses', push);
+    }
+
+    // 3. NOTES STEP 3: CHAPTER NOTES LIST FOR SELECTED CLASS
+    function openNotesChaptersView(classNum, push) {
+      if (push === undefined) push = true;
+      selectedNoteClassKey = classNum;
+      const subj = APP_DATA[selectedNoteSubjectKey] || { title: selectedNoteSubjectKey, icon: '📚' };
+      const displayLabel = isNaN(classNum) ? classNum : 'Class ' + classNum;
+      document.getElementById('notesListTitle').textContent = (subj.icon || '📚') + ' ' + subj.title + ' • ' + displayLabel + ' PDF Notes';
+
+      const container = document.getElementById('notesChaptersContainer');
+      const filteredNotes = NOTES_BANK.filter(function(n) {
+        return n.subject === selectedNoteSubjectKey && String(n.class) === String(classNum);
+      });
+
+      filteredNotes.sort(function(a, b) {
+        return extractChapterNum(a.title) - extractChapterNum(b.title);
+      });
+
+      if (filteredNotes.length === 0) {
         container.innerHTML = '<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500 text-xs">' +
-                              'Is category me abhi koi PDF notes upload nahi hain. Admin panel se add hote hi yahan show ho jayenge.</div>';
-        return;
+                              'Is class ke liye abhi koi PDF notes upload nahi hain. Admin panel se add hote hi yahan show ho jayenge.</div>';
+      } else {
+        container.innerHTML = filteredNotes.map(function(note, idx) {
+          const chNum = extractChapterNum(note.title) !== 9999 ? extractChapterNum(note.title) : (idx + 1);
+          return '<div class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-400 shadow-sm flex flex-wrap items-center justify-between gap-3">' +
+                 '<div><div class="flex items-center gap-2 mb-1">' +
+                 '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">Lesson ' + chNum + '</span>' +
+                 '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800">' + displayLabel + '</span></div>' +
+                 '<h4 class="font-bold text-slate-800 text-sm">' + note.title + '</h4>' +
+                 '<p class="text-xs text-slate-500 mt-0.5">High Quality Visual PDF Notes (Text + Diagrams)</p></div>' +
+                 '<div class="flex items-center gap-2">' +
+                 '<button onclick="viewSingleNote(\'' + note.id + '\')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5">' +
+                 '<span>📖 Open PDF</span></button></div></div>';
+        }).join('');
       }
 
-      container.innerHTML = filtered.map(function(note) {
-        return '<div class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-400 shadow-sm flex flex-wrap items-center justify-between gap-3">' +
-               '<div><div class="flex items-center gap-2 mb-1">' +
-               '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">' + note.subject + '</span>' +
-               '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800">Class ' + note.class + '</span></div>' +
-               '<h4 class="font-bold text-slate-800 text-sm">' + note.title + '</h4>' +
-               '<p class="text-xs text-slate-500 mt-0.5">High Quality Visual PDF Notes (Text + Diagrams)</p></div>' +
-               '<div class="flex items-center gap-2">' +
-               '<button onclick="viewSingleNote(\'' + note.id + '\')" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow flex items-center gap-1">' +
-               '<span>📖 Open PDF</span></button></div></div>';
-      }).join('');
+      navTo('viewNotesList', push);
     }
 
     function viewSingleNote(noteId) {
-      const adminNotes = JSON.parse(localStorage.getItem('ctet_admin_notes') || '[]');
-      const allNotes = adminNotes.concat(NOTES_BANK);
-      const note = allNotes.find(function(n) { return n.id === noteId; });
+      const note = NOTES_BANK.find(function(n) { return n.id === noteId; });
       if (!note) return;
 
-      document.getElementById('noteDetailBreadcrumb').textContent = note.subject + ' • Class ' + note.class;
+      document.getElementById('noteDetailBreadcrumb').textContent = note.subject + ' • ' + (isNaN(note.class) ? note.class : 'Class ' + note.class);
       document.getElementById('noteDetailTitle').textContent = note.title;
 
       const embedUrl = cleanDriveUrl(note.pdfUrl);
@@ -806,7 +956,7 @@
       navTo('viewNoteDetail');
     }
 
-    // Full Mock Sets (Point 1 & Point 2: Independent, Exact upload numbering)
+    /* PRACTICE TESTS NAVIGATION */
     function openSetsView(push) {
       if (push === undefined) push = true;
       const container = document.getElementById('setsContainer');
@@ -814,14 +964,15 @@
       for (let i = 1; i <= 10; i++) {
         const count = QUESTION_BANK.filter(function(q) { return Number(q.mockSet) === i; }).length;
         const testKey = 'mockset_' + i;
+        const timerDuration = testTimersMap[testKey] || 25;
 
         html += '<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between gap-3">' +
                 '<div><div class="flex items-center justify-between gap-2">' +
                 '<span class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">CTET SST SET ' + i + '</span>' +
                 renderCustomStatusBadge(testKey, count) + '</div>' +
                 '<h4 class="font-bold text-slate-800 text-sm mt-1">Full Mock Test - Set ' + i + '</h4>' +
-                '<p class="text-xs text-slate-500 mt-0.5">Duration: <strong>25 Mins</strong> • Questions: <strong>' + count + '</strong></p>' +
-                renderPreviousScoreSnippet(testKey) + '</div>' +
+                '<p class="text-xs text-slate-500 mt-0.5">Duration: <strong>' + timerDuration + ' Mins</strong> • Questions: <strong>' + count + '</strong></p>' +
+                renderPreviousScoreSnippet(testKey, count) + '</div>' +
                 '<div class="pt-2 border-t border-slate-100">' +
                 '<button onclick="startMockSet(' + i + ')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">' +
                 '<span>Start Mock Test</span> <span>→</span></button></div></div>';
@@ -830,7 +981,6 @@
       navTo('viewSets', push);
     }
 
-    // PYQ Exam (Point 1 & Point 2: Independent, Exact upload numbering)
     function openPyqView(push) {
       if (push === undefined) push = true;
       const container = document.getElementById('pyqContainer');
@@ -838,14 +988,15 @@
       container.innerHTML = years.map(function(yr) {
         const count = QUESTION_BANK.filter(function(q) { return String(q.year) === yr; }).length;
         const testKey = 'pyq_' + yr;
+        const timerDuration = testTimersMap[testKey] || 25;
 
         return '<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between gap-3">' +
                '<div><div class="flex items-center justify-between gap-2">' +
                '<span class="text-[10px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">CTET Official Paper</span>' +
                renderCustomStatusBadge(testKey, count) + '</div>' +
                '<h4 class="font-bold text-slate-800 text-sm mt-1">CTET Paper 2 (' + yr + ')</h4>' +
-               '<p class="text-xs text-slate-500 mt-0.5">Duration: <strong>25 Mins</strong> • Questions: <strong>' + count + '</strong></p>' +
-               renderPreviousScoreSnippet(testKey) + '</div>' +
+               '<p class="text-xs text-slate-500 mt-0.5">Duration: <strong>' + timerDuration + ' Mins</strong> • Questions: <strong>' + count + '</strong></p>' +
+               renderPreviousScoreSnippet(testKey, count) + '</div>' +
                '<div class="pt-2 border-t border-slate-100">' +
                '<button onclick="startPyqExam(\'' + yr + '\')" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg transition shadow-sm flex items-center justify-center gap-1.5">' +
                '<span>Start Mock Test</span> <span>→</span></button></div></div>';
@@ -860,17 +1011,23 @@
       document.getElementById('classSubjectTitle').textContent = (subj.icon || '📚') + ' ' + subj.title;
 
       const container = document.getElementById('classesListContainer');
-      const classKeys = Object.keys(subj.classes || {}).map(Number).sort(function(a,b) { return a - b; });
-      const classesToDisplay = classKeys.length > 0 ? classKeys : [6, 7, 8];
+      const classKeys = Object.keys(subj.classes || {}).sort(function(a,b) { 
+        const numA = parseInt(a), numB = parseInt(b);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return a.localeCompare(b);
+      });
+      const classesToDisplay = classKeys.length > 0 ? classKeys : ['6', '7', '8'];
 
       container.innerHTML = classesToDisplay.map(function(cls) {
         const chList = (subj.classes && subj.classes[cls]) ? subj.classes[cls] : [];
         const qCount = QUESTION_BANK.filter(function(q) {
-          return q.subject === subjectKey && Number(q.class) === cls && q.targetType !== 'set' && q.targetType !== 'pyq';
+          return q.subject === subjectKey && String(q.class) === String(cls) && q.targetType !== 'set' && q.targetType !== 'pyq';
         }).length;
-        return '<div onclick="openChaptersView(' + cls + ')" class="bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col justify-between">' +
-               '<div><span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">Class ' + cls + '</span>' +
-               '<h3 class="text-base font-bold text-slate-800 mt-2">Class ' + cls + ': ' + subj.title.split(' ')[0] + '</h3>' +
+        const displayLabel = isNaN(cls) ? cls : 'Class ' + cls;
+
+        return '<div onclick="openChaptersView(\'' + cls + '\')" class="bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col justify-between">' +
+               '<div><span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">' + displayLabel + '</span>' +
+               '<h3 class="text-base font-bold text-slate-800 mt-2">' + displayLabel + ': ' + subj.title.split(' ')[0] + '</h3>' +
                '<p class="text-xs text-slate-500 mt-1">' + chList.length + ' Chapters Available</p></div>' +
                '<div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">' +
                '<span class="font-semibold text-slate-600">' + qCount + ' Questions</span>' +
@@ -884,12 +1041,12 @@
       if (push === undefined) push = true;
       currentClassNum = classNum;
       const subj = APP_DATA[currentSubjectKey] || { title: currentSubjectKey, icon: '📚', classes: {} };
-      document.getElementById('chapSubjectClassTitle').textContent = (subj.icon || '📚') + ' ' + subj.title + ' • Class ' + classNum;
-      document.getElementById('revisionQuestTitle').textContent = 'Class ' + classNum + ' - All Chapter Revision Quest';
+      const displayLabel = isNaN(classNum) ? classNum : 'Class ' + classNum;
+      document.getElementById('chapSubjectClassTitle').textContent = (subj.icon || '📚') + ' ' + subj.title + ' • ' + displayLabel;
+      document.getElementById('revisionQuestTitle').textContent = displayLabel + ' - All Chapter Revision Quest';
 
-      // Isolation: Only count chapter practice questions
       const questPoolCount = QUESTION_BANK.filter(function(q) {
-        return q.subject === currentSubjectKey && Number(q.class) === Number(currentClassNum) && q.targetType !== 'set' && q.targetType !== 'pyq';
+        return q.subject === currentSubjectKey && String(q.class) === String(currentClassNum) && q.targetType !== 'set' && q.targetType !== 'pyq';
       }).length;
       const questKey = 'quest_' + currentSubjectKey + '_' + classNum;
       document.getElementById('questStatusBadge').innerHTML = renderCustomStatusBadge(questKey, questPoolCount);
@@ -900,7 +1057,7 @@
 
       if (chapters.length === 0) {
         listContainer.innerHTML = '<div class="bg-white p-6 rounded-xl border border-slate-200 text-center text-slate-500 text-xs">' +
-                                  'No chapters found for Class ' + classNum + '.</div>';
+                                  'No chapters found for ' + displayLabel + '.</div>';
       } else {
         listContainer.innerHTML = chapters.map(function(ch, idx) {
           const count = QUESTION_BANK.filter(function(q) {
@@ -916,7 +1073,7 @@
                  renderCustomStatusBadge(testKey, count) + '</div>' +
                  '<h4 class="font-bold text-slate-800 text-sm mt-1">' + ch.name + '</h4>' +
                  '<p class="text-[11px] text-slate-400">Duration: 15 Mins • Available Questions: ' + count + '</p>' +
-                 renderPreviousScoreSnippet(testKey) + '</div>' +
+                 renderPreviousScoreSnippet(testKey, count) + '</div>' +
                  '<div class="flex items-center gap-2">' +
                  '<button onclick="startChapterTest(\'' + ch.id + '\', \'' + ch.name.replace(/'/g, "\\'") + '\')" class="px-4 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 text-xs font-bold rounded-lg transition shadow-sm">' +
                  'Start Test →</button></div></div>';
@@ -963,7 +1120,6 @@
       return copy;
     }
 
-    // Set / PYQ tests keep EXACT question & options order; chapter practice shuffles options (Point 2)
     function prepareQuestion(rawQ, shouldShuffle) {
       if (!shouldShuffle) {
         return {
@@ -1001,12 +1157,10 @@
 
       clearTimerEngine();
 
-      // Retrieve previous attempt's review markers & score (Point 4 & Point 6)
       const comp = getCompletedTests();
       const prevData = comp[testKey] || null;
       const prevMarkedIds = prevData ? (prevData.markedReviewIds || []) : [];
 
-      // If test was already completed, show previous score banner at top
       const bannerEl = document.getElementById('prevScoreAlertBanner');
       const bannerText = document.getElementById('prevScoreAlertText');
       if (prevData && prevData.completed) {
@@ -1016,7 +1170,6 @@
         bannerEl.classList.add('hidden');
       }
 
-      // If set or pyq, KEEP exact original array order; else shuffle questions
       const orderedPool = shouldShuffle ? shuffleArray(pool) : pool.slice();
       const finalQuestions = orderedPool.map(function(q) { return prepareQuestion(q, shouldShuffle); });
 
@@ -1095,16 +1248,27 @@
       const idx = activeTest.currentIndex;
 
       const wasReviewedPreviously = activeTest.prevMarkedIds && activeTest.prevMarkedIds.indexOf(q.id) !== -1;
+      const isMarkedNow = activeTest.markedReview.has(idx);
+      const isPurpleTheme = wasReviewedPreviously || isMarkedNow;
 
       document.getElementById('badgeQuestionNumber').textContent = 'Question ' + (idx + 1) + ' / ' + total;
       
-      // Topic badge + Previous Review Purple badge (Point 6)
       const badgeTopicEl = document.getElementById('badgeTopic');
       badgeTopicEl.innerHTML = '<span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-medium">' + q.topic + '</span>' +
-        (wasReviewedPreviously ? '<span class="px-2 py-0.5 rounded-full bg-purple-600 text-white font-bold text-[10px] shadow-sm">🔖 Pichli baar Review/Choda gaya tha</span>' : '');
+        (wasReviewedPreviously ? '<span class="px-2 py-0.5 rounded-full bg-purple-600 text-white font-bold text-[10px] shadow-sm">🔖 Pichli baar Review me tha</span>' : '');
 
-      // Multiline Statement Support (Point 3)
-      document.getElementById('questionText').textContent = q.text;
+      const cardBox = document.getElementById('questionCardBox');
+      const questionTextEl = document.getElementById('questionText');
+
+      if (isPurpleTheme) {
+        cardBox.className = 'bg-purple-50/70 p-5 rounded-2xl border-2 border-purple-400 shadow-md flex flex-col justify-between min-h-[420px] transition duration-200';
+        questionTextEl.className = 'text-sm sm:text-base font-bold text-purple-950 leading-relaxed mb-6 select-none render-multiline';
+      } else {
+        cardBox.className = 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between min-h-[420px] transition duration-200';
+        questionTextEl.className = 'text-sm sm:text-base font-semibold text-slate-800 leading-relaxed mb-6 select-none render-multiline';
+      }
+
+      questionTextEl.textContent = q.text;
 
       const letters = ['(A)', '(B)', '(C)', '(D)'];
       const selected = activeTest.userAnswers[idx];
@@ -1112,17 +1276,25 @@
       const container = document.getElementById('optionsContainer');
       container.innerHTML = q.options.map(function(opt, oIdx) {
         const isChecked = selected === oIdx;
-        return '<div onclick="selectOption(' + oIdx + ')" class="p-3 rounded-xl border cursor-pointer transition select-none flex items-start gap-2.5 ' +
-          (isChecked ? 'border-emerald-600 bg-emerald-50/70 ring-1 ring-emerald-500 font-semibold' : 'border-slate-200 bg-white hover:bg-slate-50') + '">' +
+        let optStyle = 'border-slate-200 bg-white hover:bg-slate-50 text-slate-800';
+
+        if (isPurpleTheme) {
+          optStyle = isChecked 
+            ? 'border-purple-600 bg-purple-200/80 ring-2 ring-purple-600 font-bold text-purple-950' 
+            : 'border-purple-300 bg-white hover:bg-purple-100/50 text-purple-900';
+        } else if (isChecked) {
+          optStyle = 'border-emerald-600 bg-emerald-50/70 ring-1 ring-emerald-500 font-semibold text-slate-900';
+        }
+
+        return '<div onclick="selectOption(' + oIdx + ')" class="p-3 rounded-xl border cursor-pointer transition select-none flex items-start gap-2.5 ' + optStyle + '">' +
           '<span class="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center shrink-0 text-[10px] font-bold ' +
-          (isChecked ? 'bg-emerald-600 border-emerald-600 text-white' : '') + '">' + (isChecked ? '✓' : '') + '</span>' +
-          '<div class="text-xs leading-relaxed text-slate-800 render-multiline">' +
+          (isChecked ? (isPurpleTheme ? 'bg-purple-600 border-purple-600 text-white' : 'bg-emerald-600 border-emerald-600 text-white') : '') + '">' + (isChecked ? '✓' : '') + '</span>' +
+          '<div class="text-xs leading-relaxed render-multiline">' +
           '<strong class="mr-1">' + letters[oIdx] + '</strong> ' + opt + '</div></div>';
       }).join('');
 
-      const isMarked = activeTest.markedReview.has(idx);
       const btnMark = document.getElementById('btnMarkReview');
-      btnMark.className = isMarked
+      btnMark.className = isMarkedNow
         ? 'px-3 py-2 rounded-xl text-xs font-bold border border-purple-500 bg-purple-600 text-white'
         : 'px-3 py-2 rounded-xl text-xs font-bold border border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100';
 
@@ -1177,7 +1349,6 @@
       renderPalette();
     }
 
-    // Palette Grid with Purple Color for Previously Reviewed questions (Point 6)
     function renderPalette() {
       const grid = document.getElementById('paletteGrid');
       grid.innerHTML = activeTest.questions.map(function(q, i) {
@@ -1262,7 +1433,6 @@
         });
       }
 
-      // Result View Completion Badge
       const resultBadge = document.getElementById('resultCompletionBadge');
       if (pctAttempted >= 100) {
         resultBadge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800';
@@ -1295,19 +1465,20 @@
       initTest(activeTest.originalPool, activeTest.title, activeTest.context, activeTest.durationMinutes, activeTest.testKey, activeTest.shouldShuffle);
     }
 
-    // Full Mock Set (Point 1 & Point 2: Isolated, Keeps exact upload sequence)
     function startMockSet(setNum) {
       const pool = QUESTION_BANK.filter(function(q) { return Number(q.mockSet) === Number(setNum); });
-      initTest(pool, 'Full Mock Test - Set ' + setNum, 'CTET Paper 2 Simulation', 25, 'mockset_' + setNum, false);
+      const testKey = 'mockset_' + setNum;
+      const duration = testTimersMap[testKey] || 25;
+      initTest(pool, 'Full Mock Test - Set ' + setNum, 'CTET Paper 2 Simulation', duration, testKey, false);
     }
 
-    // PYQ Exam (Point 1 & Point 2: Isolated, Keeps exact upload sequence)
     function startPyqExam(year) {
       const pool = QUESTION_BANK.filter(function(q) { return String(q.year) === String(year); });
-      initTest(pool, 'CTET SST PYQ ' + year, 'Previous Year Paper', 25, 'pyq_' + year, false);
+      const testKey = 'pyq_' + year;
+      const duration = testTimersMap[testKey] || 25;
+      initTest(pool, 'CTET SST PYQ ' + year, 'Previous Year Paper', duration, testKey, false);
     }
 
-    // Chapter Practice (Point 1: Isolated, Only chapter questions)
     function startChapterTest(chapterId, chapterName) {
       const pool = QUESTION_BANK.filter(function(q) {
         return q.chapterId === chapterId && q.targetType !== 'set' && q.targetType !== 'pyq';
@@ -1317,13 +1488,14 @@
 
     function startClassRevisionQuest() {
       const pool = QUESTION_BANK.filter(function(q) {
-        return q.subject === currentSubjectKey && Number(q.class) === Number(currentClassNum) && q.targetType !== 'set' && q.targetType !== 'pyq';
+        return q.subject === currentSubjectKey && String(q.class) === String(currentClassNum) && q.targetType !== 'set' && q.targetType !== 'pyq';
       });
       initTest(pool, 'All Chapter Revision Quest (Class ' + currentClassNum + ')', 'Class Revision Mega Test', 25, 'quest_' + currentSubjectKey + '_' + currentClassNum, true);
     }
 
-    window.onload = function() {
+    window.onload = async function() {
       renderDashboard();
+      await syncStudentDataFromFirebase();
     };
   </script>
 </body>
