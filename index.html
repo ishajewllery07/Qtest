@@ -15,7 +15,6 @@
     .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     .render-multiline { white-space: pre-line; word-break: break-word; }
     
-    /* Mobile Status Bar / Notch safe padding */
     .mobile-header-spacing {
       padding-top: max(2rem, env(safe-area-inset-top));
     }
@@ -182,7 +181,7 @@
       </div>
     </section>
 
-    <!-- NOTES STEP 1: SUBJECTS VIEW (Like Dashboard) -->
+    <!-- NOTES STEP 1: SUBJECTS VIEW -->
     <section id="viewNotesSubjects" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
         <div>
@@ -193,7 +192,7 @@
       <div id="notesSubjectGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
     </section>
 
-    <!-- NOTES STEP 2: CLASSES VIEW FOR SELECTED SUBJECT -->
+    <!-- NOTES STEP 2: CLASSES VIEW -->
     <section id="viewNotesClasses" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
         <div>
@@ -204,7 +203,7 @@
       <div id="notesClassesGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
     </section>
 
-    <!-- NOTES STEP 3: CHAPTER NOTES LIST FOR SELECTED CLASS -->
+    <!-- NOTES STEP 3: CHAPTER NOTES LIST -->
     <section id="viewNotesList" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
         <div>
@@ -415,7 +414,7 @@
         </div>
 
         <div class="flex items-center gap-2 pt-2">
-          <button onclick="saveStudentProfile()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition">
+          <button id="btnSaveProfile" onclick="saveStudentProfile()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition">
             Save Profile
           </button>
           <button onclick="closeProfileModal()" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">
@@ -459,11 +458,13 @@
       }
     }
 
-    function markTestCompleted(testKey, scoreInfo) {
+    /* CLOUD SYNC: TEST COMPLETION & SCORES -> FIREBASE */
+    async function markTestCompleted(testKey, scoreInfo) {
       if (!testKey) return;
       scoreInfo = scoreInfo || {};
       const data = getCompletedTests();
-      data[testKey] = {
+      
+      const record = {
         completed: true,
         testTitle: activeTest.title || testKey,
         score: scoreInfo.score || 0,
@@ -475,9 +476,22 @@
         }).filter(Boolean),
         timestamp: new Date().toISOString()
       };
+
+      data[testKey] = record;
+      
       try {
         localStorage.setItem('ctet_completed_tests', JSON.stringify(data));
       } catch (e) {}
+
+      // Realtime Cloud Push to Firebase so Admin sees it live
+      try {
+        await fetch(FIREBASE_BASE_URL + '/completed_tests/' + testKey + '.json', {
+          method: 'PUT',
+          body: JSON.stringify(record)
+        });
+      } catch (err) {
+        console.warn('Could not sync score to cloud:', err);
+      }
     }
 
     function renderCustomStatusBadge(testKey, totalQCount) {
@@ -561,7 +575,6 @@
     let currentSubjectKey = 'History';
     let currentClassNum = '6';
 
-    // Notes selection state
     let selectedNoteSubjectKey = '';
     let selectedNoteClassKey = '';
 
@@ -611,34 +624,65 @@
       }
     };
 
+    /* SYNC STUDENT DATA & ADMIN CONTENT FROM FIREBASE */
     async function syncStudentDataFromFirebase() {
       try {
-        const appRes = await fetch(FIREBASE_BASE_URL + '/app_data.json');
+        const [appRes, qRes, nRes, tRes, profRes, testRes] = await Promise.all([
+          fetch(FIREBASE_BASE_URL + '/app_data.json'),
+          fetch(FIREBASE_BASE_URL + '/questions.json'),
+          fetch(FIREBASE_BASE_URL + '/notes.json'),
+          fetch(FIREBASE_BASE_URL + '/timers.json'),
+          fetch(FIREBASE_BASE_URL + '/student_profile.json'),
+          fetch(FIREBASE_BASE_URL + '/completed_tests.json')
+        ]);
+
         const appD = await appRes.json();
         if (appD && Object.keys(appD).length > 0) {
           APP_DATA = appD;
           localStorage.setItem('ctet_admin_app_data', JSON.stringify(APP_DATA));
         }
 
-        const qRes = await fetch(FIREBASE_BASE_URL + '/questions.json');
         const qData = await qRes.json();
         if (qData) {
           QUESTION_BANK = Array.isArray(qData) ? qData : Object.values(qData);
           localStorage.setItem('ctet_admin_questions', JSON.stringify(QUESTION_BANK));
         }
 
-        const nRes = await fetch(FIREBASE_BASE_URL + '/notes.json');
         const nData = await nRes.json();
         if (nData) {
           NOTES_BANK = Array.isArray(nData) ? nData : Object.values(nData);
           localStorage.setItem('ctet_admin_notes', JSON.stringify(NOTES_BANK));
         }
 
-        const tRes = await fetch(FIREBASE_BASE_URL + '/timers.json');
         const tData = await tRes.json();
         if (tData) {
           testTimersMap = tData;
           localStorage.setItem('ctet_admin_timers', JSON.stringify(testTimersMap));
+        }
+
+        // Student Profile from Cloud
+        const profD = await profRes.json();
+        if (profD && profD.name) {
+          localStorage.setItem('ctet_student_profile', JSON.stringify(profD));
+        }
+
+        // Completed tests from Cloud
+        const testsD = await testRes.json();
+        if (testsD) {
+          localStorage.setItem('ctet_completed_tests', JSON.stringify(testsD));
+          
+          // Re-calculate local stats
+          const keys = Object.keys(testsD);
+          appState.testsTaken = keys.length;
+          let sumAcc = 0;
+          let best = 0;
+          keys.forEach(function(k) {
+            const acc = testsD[k].accuracy || 0;
+            sumAcc += acc;
+            if (acc > best) best = acc;
+          });
+          appState.totalScoreSum = sumAcc;
+          appState.bestPercentage = best;
         }
 
         renderDashboard();
@@ -716,10 +760,12 @@
       document.getElementById('profileModal').classList.add('hidden');
     }
 
-    function saveStudentProfile() {
+    /* CLOUD SYNC: STUDENT PROFILE -> FIREBASE */
+    async function saveStudentProfile() {
       const name = document.getElementById('inputStudentName').value.trim();
       const email = document.getElementById('inputStudentEmail').value.trim();
       const mobile = document.getElementById('inputStudentMobile').value.trim();
+      const btn = document.getElementById('btnSaveProfile');
 
       if (!name) {
         alert('Kripya apna naam daalein!');
@@ -729,15 +775,30 @@
       const profile = { 
         name: name, 
         email: email, 
-        mobile: mobile,
+        mobile: mobile, 
         photo: uploadedBase64Photo,
         updatedAt: new Date().toISOString() 
       };
-      localStorage.setItem('ctet_student_profile', JSON.stringify(profile));
 
+      // Local save
+      localStorage.setItem('ctet_student_profile', JSON.stringify(profile));
       updateHeaderProfileUI();
       closeProfileModal();
-      alert('Profile save ho gayi hai!');
+
+      // Cloud Push to Firebase
+      try {
+        btn.textContent = 'Saving to Cloud...';
+        await fetch(FIREBASE_BASE_URL + '/student_profile.json', {
+          method: 'PUT',
+          body: JSON.stringify(profile)
+        });
+        alert('Profile Cloud me safalta-purvak save ho gayi hai!');
+      } catch (e) {
+        console.warn('Profile cloud error:', e);
+        alert('Profile locally save ho gayi hai.');
+      } finally {
+        btn.textContent = 'Save Profile';
+      }
     }
 
     function getTimeBasedGreeting(name) {
@@ -821,11 +882,7 @@
       return rawUrl;
     }
 
-    /* ==============================================================
-       NEW NOTES FLOW (LIKE DASHBOARD: SUBJECTS -> CLASSES -> CHAPTERS)
-       ============================================================== */
-
-    // 1. NOTES STEP 1: SUBJECTS HUB
+    /* NOTES WORKFLOW */
     function openNotesSubjectsHub(push) {
       if (push === undefined) push = true;
       const grid = document.getElementById('notesSubjectGrid');
@@ -856,7 +913,6 @@
       navTo('viewNotesSubjects', push);
     }
 
-    // 2. NOTES STEP 2: CLASSES VIEW FOR SELECTED SUBJECT
     function openNotesClassesView(subjectKey, push) {
       if (push === undefined) push = true;
       selectedNoteSubjectKey = subjectKey;
@@ -864,8 +920,6 @@
       document.getElementById('notesClassesSubjectTitle').textContent = (subj.icon || '📚') + ' ' + subj.title + ' • Select Class';
 
       const grid = document.getElementById('notesClassesGrid');
-      
-      // Collect all classes from both syllabus and notes
       let classKeysSet = new Set(Object.keys(subj.classes || {}));
       NOTES_BANK.filter(function(n) { return n.subject === subjectKey; }).forEach(function(n) {
         if (n.class) classKeysSet.add(String(n.class));
@@ -897,7 +951,6 @@
       navTo('viewNotesClasses', push);
     }
 
-    // 3. NOTES STEP 3: CHAPTER NOTES LIST FOR SELECTED CLASS
     function openNotesChaptersView(classNum, push) {
       if (push === undefined) push = true;
       selectedNoteClassKey = classNum;
@@ -1083,6 +1136,7 @@
       navTo('viewChapters', push);
     }
 
+    /* TEST ENGINE */
     let globalTimerInterval = null;
     let timerTargetEpoch = 0;
     let timerRemainingSeconds = 0;
@@ -1384,7 +1438,8 @@
       document.getElementById('submitModal').classList.add('hidden');
     }
 
-    function finalizeSubmit() {
+    /* FINAL SUBMISSION WITH LIVE CLOUD UPLOAD */
+    async function finalizeSubmit() {
       closeSubmitModal();
       clearTimerEngine();
 
@@ -1424,8 +1479,9 @@
       appState.totalScoreSum += pct;
       if (pct > appState.bestPercentage) appState.bestPercentage = pct;
 
+      // Realtime Cloud Push Call
       if (activeTest.testKey) {
-        markTestCompleted(activeTest.testKey, {
+        await markTestCompleted(activeTest.testKey, {
           score: correct,
           total: total,
           accuracy: pct,
